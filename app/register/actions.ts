@@ -2,6 +2,7 @@
 
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
+import { cookies } from 'next/headers'
 import { createClient } from '@/utils/supabase/server'
 
 export async function signup(formData: FormData) {
@@ -29,7 +30,9 @@ export async function signup(formData: FormData) {
 
   if (error) {
     console.error('Supabase signup error:', error.message)
-    return redirect(`/register?error=${encodeURIComponent(error.message)}`)
+    const cookieStore = await cookies()
+    cookieStore.set('flash_error', error.message, { path: '/', maxAge: 30, httpOnly: true, sameSite: 'lax' })
+    return redirect('/register')
   }
 
   revalidatePath('/', 'layout')
