@@ -2,7 +2,9 @@
 
 import { useState } from "react"
 import Link from "next/link"
-import { Eye, EyeOff } from "lucide-react"
+import { useSearchParams } from "next/navigation"
+import { Eye, EyeOff, AlertCircle } from "lucide-react"
+import { login } from "./actions"
 
 import { AuthLayout } from "@/components/AuthLayout"
 import { Button } from "@/components/ui/button"
@@ -11,6 +13,8 @@ import { Label } from "@/components/ui/label"
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false)
+  const searchParams = useSearchParams()
+  const errorMsg = searchParams.get('error')
 
   return (
     <AuthLayout>
@@ -24,10 +28,17 @@ export default function LoginPage() {
           </p>
         </div>
 
-        <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
+        {errorMsg && (
+          <div className="bg-destructive/15 text-destructive text-sm p-3 rounded-md flex items-center gap-2">
+            <AlertCircle className="h-4 w-4" />
+            <p>{errorMsg}</p>
+          </div>
+        )}
+
+        <form className="space-y-4" action={login}>
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
-            <Input id="email" type="email" placeholder="you@company.com" required />
+            <Input id="email" name="email" type="email" placeholder="you@company.com" required />
           </div>
 
           <div className="space-y-2">
@@ -43,6 +54,7 @@ export default function LoginPage() {
             <div className="relative">
               <Input
                 id="password"
+                name="password"
                 type={showPassword ? "text" : "password"}
                 placeholder="Enter your password"
                 required
