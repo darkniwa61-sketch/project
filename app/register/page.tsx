@@ -2,7 +2,9 @@
 
 import { useState } from "react"
 import Link from "next/link"
-import { Eye, EyeOff } from "lucide-react"
+import { useSearchParams } from "next/navigation"
+import { Eye, EyeOff, AlertCircle } from "lucide-react"
+import { signup } from "./actions"
 
 import { AuthLayout } from "@/components/AuthLayout"
 import { Button } from "@/components/ui/button"
@@ -11,6 +13,8 @@ import { Label } from "@/components/ui/label"
 
 export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false)
+  const searchParams = useSearchParams()
+  const errorMsg = searchParams.get('error')
 
   return (
     <AuthLayout>
@@ -24,26 +28,33 @@ export default function RegisterPage() {
           </p>
         </div>
 
-        <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
+        {errorMsg && (
+          <div className="bg-destructive/15 text-destructive text-sm p-3 rounded-md flex items-center gap-2">
+            <AlertCircle className="h-4 w-4" />
+            <p>{errorMsg}</p>
+          </div>
+        )}
+
+        <form className="space-y-4" action={signup}>
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="first-name">First name</Label>
-              <Input id="first-name" placeholder="John" required />
+              <Input id="first-name" name="first-name" placeholder="John" required />
             </div>
             <div className="space-y-2">
               <Label htmlFor="last-name">Last name</Label>
-              <Input id="last-name" placeholder="Doe" required />
+              <Input id="last-name" name="last-name" placeholder="Doe" required />
             </div>
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="company">Company name</Label>
-            <Input id="company" placeholder="Your company" required />
+            <Input id="company" name="company" placeholder="Your company" required />
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
-            <Input id="email" type="email" placeholder="you@company.com" required />
+            <Input id="email" name="email" type="email" placeholder="you@company.com" required />
           </div>
 
           <div className="space-y-2">
@@ -51,6 +62,7 @@ export default function RegisterPage() {
             <div className="relative">
               <Input
                 id="password"
+                name="password"
                 type={showPassword ? "text" : "password"}
                 placeholder="Create a strong password"
                 required
