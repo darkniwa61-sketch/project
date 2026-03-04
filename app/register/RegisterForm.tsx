@@ -84,24 +84,6 @@ export default function RegisterForm({ errorMsg }: { errorMsg: string | null }) 
                         Create account &rarr;
                     </Button>
                 </form>
-
-                <div className="text-center text-sm text-muted-foreground">
-                    Already have an account?{" "}
-                    <Link href="/login" className="font-semibold text-[#2d2621] hover:underline">
-                        Sign in
-                    </Link>
-                </div>
-
-                <div className="text-center text-[11px] text-muted-foreground px-4">
-                    By creating an account, you agree to our{" "}
-                    <Link href="/terms" className="underline underline-offset-4 hover:text-primary">
-                        Terms of Service
-                    </Link>{" "}
-                    and{" "}
-                    <Link href="/privacy" className="underline underline-offset-4 hover:text-primary">
-                        Privacy Policy
-                    </Link>
-                </div>
             </div>
         </AuthLayout>
     )

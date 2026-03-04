@@ -60,14 +60,14 @@ export function DashboardHeader() {
     <header className="flex h-16 items-center border-b border-[#e7e5e4] bg-white px-6 shrink-0 gap-4">
       {/* Mobile Menu Toggle */}
       <button 
-        className="md:hidden p-2 text-gray-500 hover:text-gray-900 focus:outline-none"
+        className="lg:hidden p-2 text-gray-500 hover:text-gray-900 focus:outline-none"
         onClick={() => document.dispatchEvent(new CustomEvent('toggleMobileSidebar'))}
       >
         <Menu className="w-5 h-5" />
       </button>
 
       {/* Expand/Collapse sidebar toggle (Placeholder logic for now) */}
-      <button className="hidden md:block p-1 text-gray-400 hover:text-gray-600 rounded">
+      <button className="hidden lg:block p-1 text-gray-400 hover:text-gray-600 rounded">
         <Menu className="w-5 h-5" />
       </button>
 

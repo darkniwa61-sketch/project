@@ -48,13 +48,13 @@ export function AppSidebar() {
       {/* Mobile Overlay */}
       {isOpen && (
         <div 
-          className="fixed inset-0 z-40 bg-black/50 md:hidden"
+          className="fixed inset-0 z-40 bg-black/50 lg:hidden"
           onClick={() => setIsOpen(false)}
         />
       )}
       
       <div className={`
-        fixed inset-y-0 left-0 z-50 flex w-64 flex-col bg-[#1c1917] text-[#fafafa] border-r border-[#2d2621] transition-transform duration-300 ease-in-out md:static md:translate-x-0
+        fixed inset-y-0 left-0 z-50 flex w-64 flex-col bg-[#1c1917] text-[#fafafa] border-r border-[#2d2621] transition-transform duration-300 ease-in-out lg:static lg:translate-x-0
         ${isOpen ? 'translate-x-0' : '-translate-x-full'}
       `}>
       {/* Sidebar Header / Logo */}

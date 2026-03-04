@@ -24,6 +24,12 @@ export function InventoryTable() {
   const [searchQuery, setSearchQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('All');
   const [statusFilter, setStatusFilter] = useState('All Status');
+  
+  // Sorting state
+  const [sortConfig, setSortConfig] = useState<{ key: string, direction: 'ascending' | 'descending' | null }>({
+    key: 'name',
+    direction: null,
+  });
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -168,14 +174,43 @@ export function InventoryTable() {
     return matchesSearch && matchesCategory && matchesStatus;
   });
 
+  // Apply sorting
+  const sortedItems = [...filteredItems].sort((a, b) => {
+    if (!sortConfig.direction) return 0;
+    
+    if (sortConfig.key === 'name') {
+      const nameA = a.name.toLowerCase();
+      const nameB = b.name.toLowerCase();
+      if (nameA < nameB) return sortConfig.direction === 'ascending' ? -1 : 1;
+      if (nameA > nameB) return sortConfig.direction === 'ascending' ? 1 : -1;
+      return 0;
+    } else if (sortConfig.key === 'stock') {
+      return sortConfig.direction === 'ascending' ? a.stock - b.stock : b.stock - a.stock;
+    }
+    
+    return 0;
+  });
+
+  const handleSort = (key: string) => {
+    let direction: 'ascending' | 'descending' | null = 'ascending';
+    
+    if (sortConfig.key === key && sortConfig.direction === 'ascending') {
+      direction = 'descending';
+    } else if (sortConfig.key === key && sortConfig.direction === 'descending') {
+      direction = null; 
+    }
+    
+    setSortConfig({ key, direction });
+  };
+
   // Keep summaries based on overall inventory data to show global health
   const inStockCount = items.filter(i => i.status === 'In Stock').length;
   const lowStockCount = items.filter(i => i.status === 'Low Stock').length;
   const outOfStockCount = items.filter(i => i.status === 'Out of Stock').length;
 
   // Calculate pagination
-  const totalPages = Math.ceil(filteredItems.length / itemsPerPage);
-  const paginatedItems = filteredItems.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+  const totalPages = Math.ceil(sortedItems.length / itemsPerPage);
+  const paginatedItems = sortedItems.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
   // Dispatch notifications per-item when stock logic crosses thresholds globally
   useEffect(() => {
@@ -276,15 +311,23 @@ export function InventoryTable() {
             <thead className="bg-[#fafafa] border-b border-[#e7e5e4] text-[#78716c] font-medium">
               <tr>
                 <th className="px-6 py-4">
-                  <div className="flex items-center gap-1 cursor-pointer hover:text-[#2d2621]">
-                    Product Name <ArrowUpDown className="w-3 h-3" />
+                  <div 
+                    className="flex items-center gap-1 cursor-pointer hover:text-[#2d2621] select-none"
+                    onClick={() => handleSort('name')}
+                  >
+                    Product Name 
+                    <ArrowUpDown className={`w-3 h-3 ${sortConfig.key === 'name' && sortConfig.direction ? 'text-[#c26941]' : ''}`} />
                   </div>
                 </th>
                 <th className="px-6 py-4">SKU</th>
                 <th className="px-6 py-4">Category</th>
                 <th className="px-6 py-4">
-                  <div className="flex items-center gap-1 cursor-pointer hover:text-[#2d2621]">
-                    Stock <ArrowUpDown className="w-3 h-3" />
+                  <div 
+                    className="flex items-center gap-1 cursor-pointer hover:text-[#2d2621] select-none"
+                    onClick={() => handleSort('stock')}
+                  >
+                    Stock 
+                    <ArrowUpDown className={`w-3 h-3 ${sortConfig.key === 'stock' && sortConfig.direction ? 'text-[#c26941]' : ''}`} />
                   </div>
                 </th>
                 <th className="px-6 py-4">Min Stock</th>
