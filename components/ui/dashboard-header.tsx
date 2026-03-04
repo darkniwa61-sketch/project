@@ -58,8 +58,11 @@ export function DashboardHeader() {
 
   return (
     <header className="flex h-16 items-center border-b border-[#e7e5e4] bg-white px-6 shrink-0 gap-4">
-      {/* Mobile Menu Toggle (Placeholder) */}
-      <button className="md:hidden p-2 text-gray-500 hover:text-gray-900">
+      {/* Mobile Menu Toggle */}
+      <button 
+        className="md:hidden p-2 text-gray-500 hover:text-gray-900 focus:outline-none"
+        onClick={() => document.dispatchEvent(new CustomEvent('toggleMobileSidebar'))}
+      >
         <Menu className="w-5 h-5" />
       </button>
 

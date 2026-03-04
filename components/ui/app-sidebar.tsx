@@ -11,6 +11,7 @@ import {
   Hexagon
 } from 'lucide-react';
 import { createClient } from '@/utils/supabase/client';
+import { useState, useEffect } from 'react';
 
 const navItems = [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
@@ -23,6 +24,19 @@ export function AppSidebar() {
   const router = useRouter();
   const supabase = createClient();
 
+  const [isOpen, setIsOpen] = useState(false);
+
+  useEffect(() => {
+    const handleToggle = () => setIsOpen(prev => !prev);
+    document.addEventListener('toggleMobileSidebar', handleToggle);
+    return () => document.removeEventListener('toggleMobileSidebar', handleToggle);
+  }, []);
+
+  // auto-close on navigate on mobile
+  useEffect(() => {
+    setIsOpen(false);
+  }, [pathname]);
+
   const handleSignOut = async () => {
     await supabase.auth.signOut();
     router.push('/login');
@@ -30,7 +44,19 @@ export function AppSidebar() {
   };
 
   return (
-    <div className="flex w-64 flex-col bg-[#1c1917] text-[#fafafa] border-r border-[#2d2621]">
+    <>
+      {/* Mobile Overlay */}
+      {isOpen && (
+        <div 
+          className="fixed inset-0 z-40 bg-black/50 md:hidden"
+          onClick={() => setIsOpen(false)}
+        />
+      )}
+      
+      <div className={`
+        fixed inset-y-0 left-0 z-50 flex w-64 flex-col bg-[#1c1917] text-[#fafafa] border-r border-[#2d2621] transition-transform duration-300 ease-in-out md:static md:translate-x-0
+        ${isOpen ? 'translate-x-0' : '-translate-x-full'}
+      `}>
       {/* Sidebar Header / Logo */}
       <div className="flex items-center gap-3 p-6 shrink-0 border-b border-[#2d2621]/50">
         <div className="bg-[#c26941] p-1.5 rounded-md flex items-center justify-center">
@@ -85,6 +111,7 @@ export function AppSidebar() {
           Sign Out
         </button>
       </nav>
-    </div>
+      </div>
+    </>
   );
 }
