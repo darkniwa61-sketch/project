@@ -32,7 +32,7 @@ export default function LoginForm({ errorMsg }: { errorMsg: string | null }) {
                     </div>
                 )}
 
-                <form className="space-y-4" method="POST" action={login}>
+                <form className="space-y-4" action={login}>
                     <div className="space-y-2">
                         <Label htmlFor="email">Email</Label>
                         <Input id="email" name="email" type="email" placeholder="you@company.com" required />
