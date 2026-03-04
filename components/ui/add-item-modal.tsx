@@ -85,8 +85,8 @@ export function AddItemModal({ isOpen, onClose, onAdd }: AddItemModalProps) {
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="sku">SKU</Label>
-              <Input id="sku" name="sku" required value={formData.sku} onChange={handleChange} placeholder="HD-001" />
+              <Label htmlFor="sku">Description</Label>
+              <Input id="sku" name="sku" required value={formData.sku} onChange={handleChange} placeholder="e.g., Heavy Duty..." />
             </div>
             <div className="space-y-2">
               <Label htmlFor="category">Category</Label>

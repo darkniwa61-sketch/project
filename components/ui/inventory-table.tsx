@@ -249,7 +249,7 @@ export function InventoryTable() {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
             <Input 
               type="search" 
-              placeholder="Search by name, SKU, location, or category..." 
+              placeholder="Search by name, description, location, or category..." 
               className="pl-9 w-full bg-white border-[#e7e5e4] focus-visible:ring-[#c26941]"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -319,7 +319,7 @@ export function InventoryTable() {
                     <ArrowUpDown className={`w-3 h-3 ${sortConfig.key === 'name' && sortConfig.direction ? 'text-[#c26941]' : ''}`} />
                   </div>
                 </th>
-                <th className="px-6 py-4">SKU</th>
+                <th className="px-6 py-4">Description</th>
                 <th className="px-6 py-4">Category</th>
                 <th className="px-6 py-4">
                   <div 

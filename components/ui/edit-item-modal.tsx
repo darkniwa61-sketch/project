@@ -90,7 +90,7 @@ export function EditItemModal({ isOpen, onClose, onEdit, initialData }: EditItem
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="sku">SKU</Label>
+              <Label htmlFor="sku">Description</Label>
               <Input id="sku" name="sku" required value={formData.sku} onChange={handleChange} />
             </div>
             <div className="space-y-2">
