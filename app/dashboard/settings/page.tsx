@@ -63,9 +63,27 @@ export default function SettingsPage() {
     setIsUploading(true);
     setMessage(null);
 
+    // 0. Auto-delete the old photo if it exists to save space
+    if (formData.avatarUrl) {
+      try {
+        // Extract the filename from the public URL
+        const urlParts = formData.avatarUrl.split('/');
+        const oldFileName = urlParts[urlParts.length - 1];
+        
+        if (oldFileName) {
+          await supabase.storage
+            .from('Photos')
+            .remove([oldFileName]);
+        }
+      } catch (err) {
+        console.error('Failed to delete old avatar:', err);
+        // Continue with the upload even if delete fails
+      }
+    }
+
     // 1. Upload to Supabase Storage
     const { error: uploadError } = await supabase.storage
-      .from('avatars')
+      .from('Photos')
       .upload(filePath, file);
 
     if (uploadError) {
@@ -76,7 +94,7 @@ export default function SettingsPage() {
 
     // 2. Get the public URL for the uploaded image
     const { data: { publicUrl } } = supabase.storage
-      .from('avatars')
+      .from('Photos')
       .getPublicUrl(filePath);
 
     // 3. Immediately update the user's metadata with the new URL
