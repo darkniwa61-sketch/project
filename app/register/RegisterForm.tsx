@@ -45,8 +45,8 @@ export default function RegisterForm({ errorMsg }: { errorMsg: string | null }) 
                     </div>
 
                     <div className="space-y-2">
-                        <Label htmlFor="company">Company name</Label>
-                        <Input id="company" name="company" placeholder="Your company" required />
+                        <Label htmlFor="location">Location name</Label>
+                        <Input id="location" name="location" placeholder="e.g. Warehouse A, Manila Branch" required />
                     </div>
 
                     <div className="space-y-2">

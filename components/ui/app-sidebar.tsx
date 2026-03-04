@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { 
   LayoutDashboard, 
   Package, 
@@ -10,6 +10,7 @@ import {
   LogOut,
   Hexagon
 } from 'lucide-react';
+import { createClient } from '@/utils/supabase/client';
 
 const navItems = [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
@@ -17,13 +18,16 @@ const navItems = [
   { name: 'Reports', href: '/dashboard/reports', icon: FileText },
 ];
 
-const bottomNavItems = [
-  { name: 'Settings', href: '/settings', icon: Settings },
-  { name: 'Sign Out', href: '/logout', icon: LogOut },
-];
-
 export function AppSidebar() {
   const pathname = usePathname();
+  const router = useRouter();
+  const supabase = createClient();
+
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    router.push('/login');
+    router.refresh(); // Force refresh to clear any cached states
+  };
 
   return (
     <div className="flex w-64 flex-col bg-[#1c1917] text-[#fafafa] border-r border-[#2d2621]">
@@ -62,16 +66,24 @@ export function AppSidebar() {
 
       {/* Bottom Navigation */}
       <nav className="p-3 space-y-1">
-        {bottomNavItems.map((item) => (
-          <Link
-            key={item.name}
-            href={item.href}
-            className="flex items-center gap-3 px-3 py-2 rounded-md text-sm text-white/70 hover:bg-white/5 hover:text-white transition-colors"
-          >
-            <item.icon className="w-4 h-4" />
-            {item.name}
-          </Link>
-        ))}
+        <Link
+          href="/dashboard/settings"
+          className={`flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors ${
+            pathname === '/dashboard/settings'
+              ? 'bg-white/10 text-white font-medium'
+              : 'text-white/70 hover:bg-white/5 hover:text-white'
+          }`}
+        >
+          <Settings className="w-4 h-4" />
+          Settings
+        </Link>
+        <button
+          onClick={handleSignOut}
+          className="w-full flex items-center gap-3 px-3 py-2 rounded-md text-sm text-white/70 hover:bg-white/5 hover:text-white transition-colors"
+        >
+          <LogOut className="w-4 h-4" />
+          Sign Out
+        </button>
       </nav>
     </div>
   );

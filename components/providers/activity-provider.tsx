@@ -1,6 +1,7 @@
 'use client';
 
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { createClient } from '@/utils/supabase/client';
 
 export type ActivityType = 'add' | 'update' | 'alert' | 'delete';
 
@@ -9,39 +10,69 @@ export type LogEvent = {
   action: string;
   item: string;
   user: string;
-  time: number; // Storing as timestamp for easier sorting, we'll format on render
+  time: number;
   type: ActivityType;
   details?: string;
 };
 
 type ActivityContextType = {
   activities: LogEvent[];
-  logActivity: (event: Omit<LogEvent, 'id' | 'time'>) => void;
+  logActivity: (event: Omit<LogEvent, 'id' | 'time'>) => Promise<void>;
 };
-
-// Initial placeholder data based on the dashboard design
-const initialActivities: LogEvent[] = [
-  { id: 'act-1', action: 'Stock updated', item: 'Cement Portland Type I - 50kg', user: 'Maria Santos', time: Date.now() - 1000 * 60 * 2, type: 'update' },
-  { id: 'act-2', action: 'New item added', item: 'Steel Rebar #16 - 6m', user: 'John Doe', time: Date.now() - 1000 * 60 * 15, type: 'add' },
-  { id: 'act-3', action: 'Low stock alert', item: 'Paint Latex White - 4L', user: 'System', time: Date.now() - 1000 * 60 * 60, type: 'alert' },
-  { id: 'act-4', action: 'Stock updated', item: 'GI Pipe 1/2 × 20ft', user: 'Maria Santos', time: Date.now() - 1000 * 60 * 60 * 3, type: 'update' },
-  { id: 'act-5', action: 'Low stock alert', item: 'Nail Common 2in - 1kg', user: 'System', time: Date.now() - 1000 * 60 * 60 * 5, type: 'alert' },
-];
 
 const ActivityContext = createContext<ActivityContextType | undefined>(undefined);
 
 export function ActivityProvider({ children }: { children: ReactNode }) {
-  const [activities, setActivities] = useState<LogEvent[]>(initialActivities);
+  const [activities, setActivities] = useState<LogEvent[]>([]);
+  const supabase = createClient();
 
-  const logActivity = (event: Omit<LogEvent, 'id' | 'time'>) => {
-    const newEvent: LogEvent = {
+  useEffect(() => {
+    // 1. Fetch initial activities
+    const fetchActivities = async () => {
+      const { data, error } = await supabase
+        .from('activities')
+        .select('*')
+        .order('time', { ascending: false })
+        .limit(20);
+        
+      if (data) setActivities(data as LogEvent[]);
+      if (error) console.error("Error fetching activities:", error);
+    };
+
+    fetchActivities();
+
+    // 2. Subscribe to new activities via Realtime
+    const channel = supabase
+      .channel('activities_db_changes')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT', // Only listen for new logs
+          schema: 'public',
+          table: 'activities',
+        },
+        (payload) => {
+          console.log('New activity received!', payload);
+          setActivities((prev) => [payload.new as LogEvent, ...prev].slice(0, 20)); // Keep last 20
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [supabase]);
+
+  // 3. Write new activity logs to Supabase
+  const logActivity = async (event: Omit<LogEvent, 'id' | 'time'>) => {
+    const newEvent = {
       ...event,
       id: `act-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
       time: Date.now(),
     };
     
-    // Add new event to the beginning of the array
-    setActivities((prev) => [newEvent, ...prev]);
+    const { error } = await supabase.from('activities').insert([newEvent]);
+    if (error) console.error("Error logging activity:", error);
   };
 
   return (

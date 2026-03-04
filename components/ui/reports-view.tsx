@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useMemo, useEffect } from 'react';
 import { 
   PackagePlus, 
   PackageMinus, 
@@ -11,33 +12,116 @@ import {
   ChevronRight 
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
+import { createClient } from '@/utils/supabase/client';
+import { LogEvent } from '@/components/providers/activity-provider';
 
 const tabs = [
-  { name: 'Stock Added', icon: PackagePlus, active: true },
-  { name: 'Stock Removed', icon: PackageMinus, active: false },
-  { name: 'Product Edits', icon: Edit2, active: false },
-  { name: 'Login History', icon: LogIn, active: false },
+  { id: 'added', name: 'Stock Added', icon: PackagePlus, type: 'add' },
+  { id: 'removed', name: 'Stock Removed', icon: PackageMinus, type: 'delete' },
+  { id: 'edits', name: 'Product Edits', icon: Edit2, type: 'update' },
+  // { id: 'logins', name: 'Login History', icon: LogIn, type: 'login' }, // Leaving this defined but omitting mapping for now, assuming auth logging is separate
 ];
 
-const reportData = [
-  { id: 1, date: '2026-03-02', time: '10:30 AM', user: 'Carlos Reyes', role: 'Warehouse Staff', product: 'Deformed Bar 10mm x 6m', sku: 'STL-082', qtyAdded: '+200', newTotal: '1,350', notes: 'Monthly restock from Pacific Steel' },
-  { id: 2, date: '2026-03-02', time: '09:15 AM', user: 'Maria Santos', role: 'Warehouse Staff', product: 'Portland Cement Type I - 40kg', sku: 'CEM-001', qtyAdded: '+500', newTotal: '2,450', notes: 'Delivery from Eagle Cement Corp' },
-  { id: 3, date: '2026-03-01', time: '11:45 AM', user: 'Maria Santos', role: 'Warehouse Staff', product: 'GI Pipe 1/2 × 20ft', sku: 'PIP-005', qtyAdded: '+100', newTotal: '520', notes: 'Regular delivery from Metro Pipes' },
-  { id: 4, date: '2026-03-01', time: '02:00 PM', user: 'Ana Cruz', role: 'Inventory Manager', product: 'Plywood Marine 3/4 - 4x8', sku: 'PLY-034', qtyAdded: '+75', newTotal: '245', notes: 'Emergency restock - low stock alert' },
-  { id: 5, date: '2026-02-28', time: '08:00 AM', user: 'Carlos Reyes', role: 'Warehouse Staff', product: 'Hollow Blocks 4 inch', sku: 'BLK-007', qtyAdded: '+2,000', newTotal: '8,500', notes: 'Weekly delivery from ABC Blocks' },
-  { id: 6, date: '2026-02-28', time: '03:20 PM', user: 'John Doe', role: 'Admin', product: 'Paint Latex White - 4L', sku: 'PNT-006', qtyAdded: '+60', newTotal: '290', notes: 'Supplier promo bulk order' },
-];
+const ITEMS_PER_PAGE = 5;
+
+// Helper to format timestamps back to date strings for the table
+function formatTimestamp(ts: number) {
+  const dateObj = new Date(ts);
+  return {
+    date: dateObj.toLocaleDateString(),
+    time: dateObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+  };
+}
 
 export function ReportsView() {
+  const [activeTab, setActiveTab] = useState('add');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [sortOrder, setSortOrder] = useState<'newest' | 'oldest'>('newest');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [reportData, setReportData] = useState<LogEvent[]>([]);
+  const supabase = createClient();
+
+  useEffect(() => {
+    // 1. Fetch all activity logs
+    const fetchReports = async () => {
+      const { data, error } = await supabase
+        .from('activities')
+        .select('*')
+        .order('time', { ascending: false });
+        
+      if (data) setReportData(data as LogEvent[]);
+      if (error) console.error("Error fetching reports:", error);
+    };
+
+    fetchReports();
+
+    // 2. Listen for new logs
+    const channel = supabase
+      .channel('reports_page_changes')
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'activities' },
+        (payload) => {
+          setReportData((prev) => [payload.new as LogEvent, ...prev]);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [supabase]);
+
+  // Filter and sort the data base on active state
+  const filteredData = useMemo(() => {
+    let result = reportData.filter(item => item.type === activeTab);
+
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase();
+      result = result.filter(
+        item => 
+          item.user.toLowerCase().includes(q) || 
+          item.item.toLowerCase().includes(q) || 
+          item.action.toLowerCase().includes(q) ||
+          (item.details && item.details.toLowerCase().includes(q))
+      );
+    }
+
+    result.sort((a, b) => {
+      return sortOrder === 'newest' ? b.time - a.time : a.time - b.time;
+    });
+
+    return result;
+  }, [reportData, activeTab, searchQuery, sortOrder]);
+
+  // Pagination logic
+  const totalPages = Math.ceil(filteredData.length / ITEMS_PER_PAGE) || 1;
+  const validCurrentPage = Math.min(currentPage, totalPages);
+  
+  const paginatedData = filteredData.slice(
+    (validCurrentPage - 1) * ITEMS_PER_PAGE,
+    validCurrentPage * ITEMS_PER_PAGE
+  );
+
+  const handleTabChange = (tabType: string) => {
+    setActiveTab(tabType);
+    setCurrentPage(1); // Reset page on tab change
+  };
+
+  const toggleSort = () => {
+    setSortOrder(prev => prev === 'newest' ? 'oldest' : 'newest');
+  };
+
   return (
     <div className="space-y-6">
       {/* Tabs */}
       <div className="flex items-center gap-2 border-b border-[#e7e5e4] pb-px overflow-x-auto scbar-hide">
         {tabs.map((tab) => (
           <button
-            key={tab.name}
+            key={tab.id}
+            onClick={() => handleTabChange(tab.type)}
             className={`flex items-center gap-2 px-4 py-2 text-sm font-medium transition-colors border-b-2 whitespace-nowrap ${
-              tab.active
+              activeTab === tab.type
                 ? 'border-[#c26941] text-[#2d2621] bg-white rounded-t-md border-t border-l border-r border-t-[#e7e5e4] border-l-[#e7e5e4] border-r-[#e7e5e4] -mb-px'
                 : 'border-transparent text-[#78716c] hover:text-[#2d2621] hover:border-[#e7e5e4] rounded-t-md'
             }`}
@@ -54,14 +138,22 @@ export function ReportsView() {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
           <Input 
             type="search" 
-            placeholder="Search by user, product, or SKU..." 
+            placeholder="Search by user, product, or action..." 
             className="pl-9 w-full bg-white border-[#e7e5e4] focus-visible:ring-[#c26941]"
+            value={searchQuery}
+            onChange={(e) => {
+              setSearchQuery(e.target.value);
+              setCurrentPage(1); // Reset page on search
+            }}
           />
         </div>
 
-        <button className="flex items-center gap-2 px-4 py-2 bg-white border border-[#e7e5e4] text-[#2d2621] rounded-md text-sm font-medium hover:bg-[#f5f5f4] transition-colors shrink-0">
+        <button 
+          onClick={toggleSort}
+          className="flex items-center gap-2 px-4 py-2 bg-white border border-[#e7e5e4] text-[#2d2621] rounded-md text-sm font-medium hover:bg-[#f5f5f4] transition-colors shrink-0"
+        >
           <ArrowDownUp className="w-4 h-4" />
-          Newest first
+          {sortOrder === 'newest' ? 'Newest first' : 'Oldest first'}
         </button>
       </div>
 
@@ -73,47 +165,73 @@ export function ReportsView() {
               <tr>
                 <th className="px-6 py-4">Date / Time</th>
                 <th className="px-6 py-4">User</th>
+                <th className="px-6 py-4">Action</th>
                 <th className="px-6 py-4">Product</th>
-                <th className="px-6 py-4">SKU</th>
-                <th className="px-6 py-4">Qty Added</th>
-                <th className="px-6 py-4">New Total</th>
-                <th className="px-6 py-4">Notes</th>
+                <th className="px-6 py-4">Details</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[#e7e5e4]">
-              {reportData.map((row) => (
-                <tr key={row.id} className="hover:bg-[#fafafa]/50 transition-colors">
-                  <td className="px-6 py-4">
-                    <p className="font-medium text-[#2d2621]">{row.date}</p>
-                    <p className="text-xs text-[#78716c] mt-0.5">{row.time}</p>
-                  </td>
-                  <td className="px-6 py-4">
-                    <p className="font-medium text-[#2d2621]">{row.user}</p>
-                    <p className="text-xs text-[#78716c] mt-0.5">{row.role}</p>
-                  </td>
-                  <td className="px-6 py-4 font-medium text-[#2d2621]">{row.product}</td>
-                  <td className="px-6 py-4 text-[#78716c]">{row.sku}</td>
-                  <td className="px-6 py-4 font-semibold text-green-600">{row.qtyAdded}</td>
-                  <td className="px-6 py-4 font-bold text-[#2d2621]">{row.newTotal}</td>
-                  <td className="px-6 py-4 text-[#78716c] text-xs max-w-xs truncate" title={row.notes}>
-                    {row.notes}
+              {paginatedData.length > 0 ? (
+                paginatedData.map((row) => {
+                  const { date, time } = formatTimestamp(row.time);
+                  return (
+                    <tr key={row.id} className="hover:bg-[#fafafa]/50 transition-colors">
+                      <td className="px-6 py-4">
+                        <p className="font-medium text-[#2d2621]">{date}</p>
+                        <p className="text-xs text-[#78716c] mt-0.5">{time}</p>
+                      </td>
+                      <td className="px-6 py-4">
+                        <p className="font-medium text-[#2d2621]">{row.user}</p>
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className={`px-2 py-1 rounded text-xs font-medium ${
+                          row.type === 'add' ? 'bg-green-100 text-green-700' :
+                          row.type === 'delete' ? 'bg-red-100 text-red-700' :
+                          row.type === 'update' ? 'bg-blue-100 text-blue-700' :
+                          'bg-amber-100 text-amber-700'
+                        }`}>
+                          {row.action}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 font-medium text-[#2d2621]">{row.item}</td>
+                      <td className="px-6 py-4 text-[#78716c] text-xs max-w-xs truncate" title={row.details}>
+                        {row.details || '-'}
+                      </td>
+                    </tr>
+                  );
+                })
+              ) : (
+                <tr>
+                  <td colSpan={5} className="px-6 py-12 text-center text-[#78716c]">
+                    No records found matching your criteria.
                   </td>
                 </tr>
-              ))}
+              )}
             </tbody>
           </table>
         </div>
 
         {/* Pagination overflow handling */}
         <div className="flex items-center justify-between px-6 py-4 border-t border-[#e7e5e4] bg-white">
-          <p className="text-sm text-[#78716c]">Showing 1 to 6 of 8 entries</p>
+          <p className="text-sm text-[#78716c]">
+            Showing {(validCurrentPage - 1) * ITEMS_PER_PAGE + (filteredData.length > 0 ? 1 : 0)} to {Math.min(validCurrentPage * ITEMS_PER_PAGE, filteredData.length)} of {filteredData.length} entries
+          </p>
           <div className="flex items-center gap-1">
-            <button className="p-2 rounded hover:bg-[#f5f5f4] text-gray-400 transition-colors">
+            <button 
+              onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+              disabled={validCurrentPage === 1}
+              className="p-2 rounded hover:bg-[#f5f5f4] text-[#78716c] disabled:opacity-50 disabled:hover:bg-transparent transition-colors"
+            >
               <ChevronLeft className="w-4 h-4" />
             </button>
-            <button className="px-3 py-1 rounded bg-[#c26941] text-white text-sm font-medium">1</button>
-            <button className="px-3 py-1 rounded hover:bg-[#f5f5f4] text-[#2d2621] text-sm font-medium transition-colors">2</button>
-            <button className="p-2 rounded hover:bg-[#f5f5f4] text-[#2d2621] transition-colors">
+            <button className="px-3 py-1 rounded bg-[#c26941] text-white text-sm font-medium">
+              {validCurrentPage}
+            </button>
+            <button 
+              onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+              disabled={validCurrentPage === totalPages}
+              className="p-2 rounded hover:bg-[#f5f5f4] text-[#2d2621] disabled:opacity-50 disabled:hover:bg-transparent transition-colors"
+            >
               <ChevronRight className="w-4 h-4" />
             </button>
           </div>

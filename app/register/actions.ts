@@ -12,7 +12,7 @@ export async function signup(formData: FormData) {
   const password = formData.get('password') as string
   const firstName = formData.get('first-name') as string
   const lastName = formData.get('last-name') as string
-  const company = formData.get('company') as string
+  const location = formData.get('location') as string
 
   const data = {
     email,
@@ -21,7 +21,7 @@ export async function signup(formData: FormData) {
       data: {
         first_name: firstName,
         last_name: lastName,
-        company: company,
+        location: location,
       }
     }
   }

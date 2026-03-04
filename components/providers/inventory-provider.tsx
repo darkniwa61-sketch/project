@@ -1,8 +1,8 @@
 'use client';
 
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { createClient } from '@/utils/supabase/client';
 
-// Core item type matching the table structure
 export type InventoryItem = {
   id: number;
   name: string;
@@ -17,82 +17,113 @@ export type InventoryItem = {
 
 type InventoryContextType = {
   items: InventoryItem[];
-  addItem: (item: Omit<InventoryItem, 'id'>) => void;
-  updateItem: (id: number, updatedData: Partial<InventoryItem>) => void;
-  deleteItem: (id: number) => void;
-  updateQuantity: (id: number, change: number) => void;
+  addItem: (item: Omit<InventoryItem, 'id'>) => Promise<void>;
+  updateItem: (id: number, updatedData: Partial<InventoryItem>) => Promise<void>;
+  deleteItem: (id: number) => Promise<void>;
+  updateQuantity: (id: number, change: number) => Promise<void>;
 };
-
-// Start with the initial hardcoded data
-const initialInventoryData: InventoryItem[] = [
-  { id: 1, name: 'Cement Portland Type I - 50kg', sku: 'CEM-001', category: 'Cement', stock: 450, min: 100, unit: 'bag', status: 'In Stock', location: 'Warehouse A - Rack 1' },
-  { id: 2, name: 'Steel Rebar #16 - 6m', sku: 'STL-016', category: 'Steel', stock: 320, min: 50, unit: 'pc', status: 'In Stock', location: 'Warehouse B - Rack 3' },
-  { id: 3, name: 'Paint Latex White - 4L', sku: 'PLW-004', category: 'Paints', stock: 5, min: 20, unit: 'can', status: 'Low Stock', location: 'Warehouse A - Rack 5' },
-  { id: 4, name: 'Plywood Marine 3/4 - 4x8', sku: 'PLY-034', category: 'Wood', stock: 85, min: 30, unit: 'sheet', status: 'In Stock', location: 'Warehouse C - Rack 1' },
-  { id: 5, name: 'Nail Common 2in - 1kg', sku: 'NC2-001', category: 'Hardware', stock: 8, min: 50, unit: 'kg', status: 'Low Stock', location: 'Warehouse A - Rack 7' },
-  { id: 6, name: 'GI Pipe 1/2 × 20ft', sku: 'GIP-012', category: 'Plumbing', stock: 120, min: 40, unit: 'pc', status: 'In Stock', location: 'Warehouse B - Rack 5' },
-  { id: 7, name: 'PVC Pipe 4in x 10ft', sku: 'PVC4-010', category: 'Plumbing', stock: 3, min: 15, unit: 'pc', status: 'Low Stock', location: 'Warehouse B - Rack 6' },
-  { id: 8, name: 'Electrical Wire #14 - 75m', sku: 'EW14-075', category: 'Electrical', stock: 2, min: 10, unit: 'roll', status: 'Low Stock', location: 'Warehouse A - Rack 9' },
-  { id: 9, name: 'Hollow Blocks 4in', sku: 'HB4-001', category: 'Masonry', stock: 45, min: 200, unit: 'pc', status: 'Low Stock', location: 'Warehouse C - Rack 3' },
-  { id: 10, name: 'Safety Helmet - Yellow', sku: 'SHY-001', category: 'PPE', stock: 300, min: 50, unit: 'pc', status: 'In Stock', location: 'Warehouse A - Rack 2' },
-];
 
 const InventoryContext = createContext<InventoryContextType | undefined>(undefined);
 
 export function InventoryProvider({ children }: { children: ReactNode }) {
-  const [items, setItems] = useState<InventoryItem[]>(initialInventoryData);
+  const [items, setItems] = useState<InventoryItem[]>([]);
+  const supabase = createClient();
 
-  const addItem = (item: Omit<InventoryItem, 'id'>) => {
-    const newItem = {
-      ...item,
-      id: items.length > 0 ? Math.max(...items.map((i) => i.id)) + 1 : 1,
+  // 1. Fetch initial data and set up realtime subscription on mount
+  useEffect(() => {
+    // Fetch initial items
+    const fetchInventory = async () => {
+      const { data, error } = await supabase.from('inventory').select('*').order('id', { ascending: true });
+      if (data) setItems(data);
+      if (error) console.error("Error fetching inventory:", error);
     };
-    setItems((prev) => [...prev, newItem]);
-  };
 
-  const updateItem = (id: number, updatedItem: Partial<InventoryItem>) => {
-    setItems((prev) =>
-      prev.map((item) => {
-        if (item.id === id) {
-          const newItem = { ...item, ...updatedItem };
-          newItem.status = newItem.stock === 0 ? 'Out of Stock' : newItem.stock <= newItem.min ? 'Low Stock' : 'In Stock';
-          return newItem;
+    fetchInventory();
+
+    // 2. Subscribe to Realtime changes
+    const channel = supabase
+      .channel('inventory_db_changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*', // Listen for INSERT, UPDATE, and DELETE
+          schema: 'public',
+          table: 'inventory',
+        },
+        (payload) => {
+          console.log('Realtime change received!', payload);
+          
+          if (payload.eventType === 'INSERT') {
+            setItems((prev) => [...prev, payload.new as InventoryItem]);
+          } 
+          else if (payload.eventType === 'UPDATE') {
+            setItems((prev) =>
+              prev.map((item) => (item.id === payload.new.id ? (payload.new as InventoryItem) : item))
+            );
+          } 
+          else if (payload.eventType === 'DELETE') {
+            setItems((prev) => prev.filter((item) => item.id !== payload.old.id));
+          }
         }
-        return item;
-      })
-    );
+      )
+      .subscribe();
+
+    // Cleanup subscription on unmount
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [supabase]);
+
+  // 3. Update Database Functions (State is handled automatically by the Realtime listener above)
+  
+  const addItem = async (item: Omit<InventoryItem, 'id'>) => {
+    // Determine status before saving
+    const status = item.stock === 0 ? 'Out of Stock' : item.stock <= item.min ? 'Low Stock' : 'In Stock';
+    
+    // Remove id from the item before inserting since it's an auto-incrementing primary key in Supabase
+    const { ...itemDataWithoutId } = item as any;
+    
+    const { error } = await supabase.from('inventory').insert([{ ...itemDataWithoutId, status }]);
+    if (error) console.error("Error adding item:", error);
   };
 
-  const deleteItem = (id: number) => {
-    setItems((prev) => prev.filter((item) => item.id !== id));
+  const updateItem = async (id: number, updatedItem: Partial<InventoryItem>) => {
+    // If stock or min changed, we might need to recalculate status
+    const currentItem = items.find(i => i.id === id);
+    if (!currentItem) return;
+
+    const newStock = updatedItem.stock ?? currentItem.stock;
+    const newMin = updatedItem.min ?? currentItem.min;
+    const newStatus = newStock === 0 ? 'Out of Stock' : newStock <= newMin ? 'Low Stock' : 'In Stock';
+
+    const { error } = await supabase.from('inventory')
+      .update({ ...updatedItem, status: newStatus })
+      .eq('id', id);
+
+    if (error) console.error("Error updating item:", error);
   };
 
-  const updateQuantity = (id: number, change: number) => {
-    setItems((prev) =>
-      prev.map((item) => {
-        if (item.id === id) {
-          const newStock = Math.max(0, item.stock + change);
-          return {
-            ...item,
-            stock: newStock,
-            status: newStock === 0 ? 'Out of Stock' : newStock <= item.min ? 'Low Stock' : 'In Stock',
-          };
-        }
-        return item;
-      })
-    );
+  const deleteItem = async (id: number) => {
+    const { error } = await supabase.from('inventory').delete().eq('id', id);
+    if (error) console.error("Error deleting item:", error);
+  };
+
+  const updateQuantity = async (id: number, change: number) => {
+    const item = items.find((i) => i.id === id);
+    if (!item) return;
+
+    const newStock = Math.max(0, item.stock + change);
+    const newStatus = newStock === 0 ? 'Out of Stock' : newStock <= item.min ? 'Low Stock' : 'In Stock';
+
+    const { error } = await supabase.from('inventory')
+      .update({ stock: newStock, status: newStatus })
+      .eq('id', id);
+      
+    if (error) console.error("Error updating quantity:", error);
   };
 
   return (
-    <InventoryContext.Provider 
-      value={{ 
-        items, 
-        addItem, 
-        updateItem, 
-        deleteItem, 
-        updateQuantity 
-      }}
-    >
+    <InventoryContext.Provider value={{ items, addItem, updateItem, deleteItem, updateQuantity }}>
       {children}
     </InventoryContext.Provider>
   );
