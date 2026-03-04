@@ -5,9 +5,11 @@ import { Search, Plus, Filter, ChevronDown, Edit2, Trash2, ArrowUpDown, ChevronL
 import { Input } from '@/components/ui/input';
 import { AddItemModal } from './add-item-modal';
 import { EditItemModal } from './edit-item-modal';
+import { DeleteConfirmModal } from './delete-confirm-modal';
 import { useNotifications } from '@/components/providers/notification-provider';
 import { useInventory } from '@/components/providers/inventory-provider';
 import { useActivity } from '@/components/providers/activity-provider';
+import { createClient } from '@/utils/supabase/client';
 
 export function InventoryTable() {
   const { items, addItem, updateItem, deleteItem, updateQuantity } = useInventory();
@@ -15,6 +17,9 @@ export function InventoryTable() {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<any>(null);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [itemToDelete, setItemToDelete] = useState<any>(null);
+  
   // Filter & Search states
   const [searchQuery, setSearchQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('All');
@@ -26,6 +31,26 @@ export function InventoryTable() {
   
   // Custom notification hook
   const { setAlerts } = useNotifications();
+
+  // Current User State
+  const [currentUserName, setCurrentUserName] = useState('System User');
+
+  // Fetch current user
+  useEffect(() => {
+    const fetchUser = async () => {
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user?.user_metadata) {
+        const { first_name, last_name } = user.user_metadata;
+        if (first_name || last_name) {
+          setCurrentUserName(`${first_name || ''} ${last_name || ''}`.trim());
+        } else if (user.email) {
+          setCurrentUserName(user.email.split('@')[0]);
+        }
+      }
+    };
+    fetchUser();
+  }, []);
 
   // Reset page to 1 when filters change
   useEffect(() => {
@@ -40,8 +65,9 @@ export function InventoryTable() {
     logActivity({
       action: 'New item added',
       item: item.name,
-      user: 'Current User',
-      type: 'add'
+      user: currentUserName,
+      type: 'add',
+      details: `Initial stock: ${item.stock} ${item.unit}`
     });
   };
 
@@ -53,8 +79,9 @@ export function InventoryTable() {
     logActivity({
       action: 'Item details updated',
       item: updatedItem.name,
-      user: 'Current User',
-      type: 'update'
+      user: currentUserName,
+      type: 'update',
+      details: `Updated info for SKU: ${updatedItem.sku}`
     });
 
     // Check if the edit caused stock to drop below min
@@ -68,18 +95,22 @@ export function InventoryTable() {
     }
   };
 
-  const handleDeleteItem = (id: number) => {
-    if (window.confirm("Are you sure you want to delete this item?")) {
-      const itemToDelete = items.find(i => i.id === id);
-      deleteItem(id);
-      if (itemToDelete) {
-        logActivity({
-          action: 'Item deleted',
-          item: itemToDelete.name,
-          user: 'Current User',
-          type: 'delete'
-        });
-      }
+  const handleDeleteItem = (item: any) => {
+    setItemToDelete(item);
+    setIsDeleteModalOpen(true);
+  };
+
+  const confirmDelete = () => {
+    if (itemToDelete) {
+      deleteItem(itemToDelete.id);
+      logActivity({
+        action: 'Item deleted',
+        item: itemToDelete.name,
+        user: currentUserName,
+        type: 'delete',
+        details: `Deleted SKU: ${itemToDelete.sku} from ${itemToDelete.location}`
+      });
+      setItemToDelete(null);
     }
   };
 
@@ -89,11 +120,17 @@ export function InventoryTable() {
     
     updateQuantity(id, delta);
     
+    const actionName = delta > 0 ? 'Stock added' : 'Stock removed';
+    const detailString = delta > 0 
+      ? `Added ${delta} ${item.unit} to stock (Total: ${item.stock + delta})` 
+      : `Removed ${Math.abs(delta)} ${item.unit} from stock (Total: ${item.stock + delta})`;
+
     logActivity({
-      action: delta > 0 ? 'Stock added' : 'Stock removed',
+      action: actionName,
       item: item.name,
-      user: 'Current User',
-      type: 'update'
+      user: currentUserName,
+      type: 'update',
+      details: detailString
     });
 
     const newStock = Math.max(0, item.stock + delta);
@@ -311,7 +348,7 @@ export function InventoryTable() {
                           <Edit2 className="w-4 h-4" />
                         </button>
                         <button 
-                          onClick={() => handleDeleteItem(item.id)}
+                          onClick={() => handleDeleteItem(item)}
                           className="p-1 hover:text-red-500 transition-colors"
                           title="Delete Item"
                         >
@@ -382,6 +419,13 @@ export function InventoryTable() {
         onClose={() => setIsEditModalOpen(false)}
         onEdit={handleEdit}
         initialData={editingItem}
+      />
+
+      <DeleteConfirmModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        onConfirm={confirmDelete}
+        itemName={itemToDelete?.name || ''}
       />
     </div>
   );
