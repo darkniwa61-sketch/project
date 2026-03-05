@@ -10,6 +10,9 @@ import { useNotifications } from '@/components/providers/notification-provider';
 import { useInventory } from '@/components/providers/inventory-provider';
 import { useActivity } from '@/components/providers/activity-provider';
 import { createClient } from '@/utils/supabase/client';
+import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Button } from '@/components/ui/button';
+import { Settings2 } from 'lucide-react';
 
 export function InventoryTable() {
   const { items, addItem, updateItem, deleteItem, updateQuantity } = useInventory();
@@ -24,6 +27,17 @@ export function InventoryTable() {
   const [searchQuery, setSearchQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('All');
   const [statusFilter, setStatusFilter] = useState('All Status');
+  
+  // Column visibility state
+  const [visibleColumns, setVisibleColumns] = useState({
+    description: true,
+    category: true,
+    stock: true,
+    minStock: true,
+    unit: true,
+    status: true,
+    location: true,
+  });
   
   // Sorting state
   const [sortConfig, setSortConfig] = useState<{ key: string, direction: 'ascending' | 'descending' | null }>({
@@ -287,13 +301,70 @@ export function InventoryTable() {
           </div>
         </div>
 
-        <button 
-          onClick={() => setIsAddModalOpen(true)}
-          className="flex items-center gap-2 px-4 py-2 bg-[#c26941] text-white rounded-md text-sm font-medium hover:bg-[#a55633] transition-colors shrink-0"
-        >
-          <Plus className="w-4 h-4" />
-          Add Item
-        </button>
+        <div className="flex items-center gap-2 shrink-0">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="sm" className="hidden sm:flex items-center gap-2 h-[38px] border-[#e7e5e4] text-[#78716c]">
+                <Settings2 className="w-4 h-4" />
+                View
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-[180px]">
+              <DropdownMenuLabel>Toggle Columns</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuCheckboxItem
+                checked={visibleColumns.description}
+                onCheckedChange={(checked) => setVisibleColumns(prev => ({ ...prev, description: checked }))}
+              >
+                Description
+              </DropdownMenuCheckboxItem>
+              <DropdownMenuCheckboxItem
+                checked={visibleColumns.category}
+                onCheckedChange={(checked) => setVisibleColumns(prev => ({ ...prev, category: checked }))}
+              >
+                Category
+              </DropdownMenuCheckboxItem>
+              <DropdownMenuCheckboxItem
+                checked={visibleColumns.stock}
+                onCheckedChange={(checked) => setVisibleColumns(prev => ({ ...prev, stock: checked }))}
+              >
+                Stock
+              </DropdownMenuCheckboxItem>
+              <DropdownMenuCheckboxItem
+                checked={visibleColumns.minStock}
+                onCheckedChange={(checked) => setVisibleColumns(prev => ({ ...prev, minStock: checked }))}
+              >
+                Min Stock
+              </DropdownMenuCheckboxItem>
+              <DropdownMenuCheckboxItem
+                checked={visibleColumns.unit}
+                onCheckedChange={(checked) => setVisibleColumns(prev => ({ ...prev, unit: checked }))}
+              >
+                Unit
+              </DropdownMenuCheckboxItem>
+              <DropdownMenuCheckboxItem
+                checked={visibleColumns.status}
+                onCheckedChange={(checked) => setVisibleColumns(prev => ({ ...prev, status: checked }))}
+              >
+                Status
+              </DropdownMenuCheckboxItem>
+              <DropdownMenuCheckboxItem
+                checked={visibleColumns.location}
+                onCheckedChange={(checked) => setVisibleColumns(prev => ({ ...prev, location: checked }))}
+              >
+                Location
+              </DropdownMenuCheckboxItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          <button 
+            onClick={() => setIsAddModalOpen(true)}
+            className="flex items-center gap-2 px-4 py-2 bg-[#c26941] text-white rounded-md text-sm font-medium hover:bg-[#a55633] transition-colors"
+          >
+            <Plus className="w-4 h-4" />
+            Add Item
+          </button>
+        </div>
       </div>
 
       {/* Summary Row */}
@@ -319,21 +390,23 @@ export function InventoryTable() {
                     <ArrowUpDown className={`w-3 h-3 ${sortConfig.key === 'name' && sortConfig.direction ? 'text-[#c26941]' : ''}`} />
                   </div>
                 </th>
-                <th className="px-6 py-4">Description</th>
-                <th className="px-6 py-4">Category</th>
-                <th className="px-6 py-4">
-                  <div 
-                    className="flex items-center gap-1 cursor-pointer hover:text-[#2d2621] select-none"
-                    onClick={() => handleSort('stock')}
-                  >
-                    Stock 
-                    <ArrowUpDown className={`w-3 h-3 ${sortConfig.key === 'stock' && sortConfig.direction ? 'text-[#c26941]' : ''}`} />
-                  </div>
-                </th>
-                <th className="px-6 py-4">Min Stock</th>
-                <th className="px-6 py-4">Unit</th>
-                <th className="px-6 py-4">Status</th>
-                <th className="px-6 py-4">Location</th>
+                {visibleColumns.description && <th className="px-6 py-4">Description</th>}
+                {visibleColumns.category && <th className="px-6 py-4">Category</th>}
+                {visibleColumns.stock && (
+                  <th className="px-6 py-4">
+                    <div 
+                      className="flex items-center gap-1 cursor-pointer hover:text-[#2d2621] select-none"
+                      onClick={() => handleSort('stock')}
+                    >
+                      Stock 
+                      <ArrowUpDown className={`w-3 h-3 ${sortConfig.key === 'stock' && sortConfig.direction ? 'text-[#c26941]' : ''}`} />
+                    </div>
+                  </th>
+                )}
+                {visibleColumns.minStock && <th className="px-6 py-4">Min Stock</th>}
+                {visibleColumns.unit && <th className="px-6 py-4">Unit</th>}
+                {visibleColumns.status && <th className="px-6 py-4">Status</th>}
+                {visibleColumns.location && <th className="px-6 py-4">Location</th>}
                 <th className="px-6 py-4 text-right">Actions</th>
               </tr>
             </thead>
@@ -342,45 +415,51 @@ export function InventoryTable() {
                 paginatedItems.map((item) => (
                   <tr key={item.id} className="hover:bg-[#fafafa]/50 transition-colors">
                     <td className="px-6 py-4 font-medium text-[#2d2621]">{item.name}</td>
-                    <td className="px-6 py-4 text-[#78716c]">{item.sku}</td>
-                    <td className="px-6 py-4">
-                      <span className="text-xs text-[#78716c] bg-[#f5f5f4] px-2 py-1 rounded">{item.category}</span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-2">
-                         <button 
-                           onClick={() => handleQuantityUpdate(item.id, -1)}
-                           className="p-1 text-gray-400 hover:text-gray-900 hover:bg-gray-100 rounded transition-colors"
-                           aria-label="Decrease quantity"
-                         >
-                           <Minus className="w-3 h-3" />
-                         </button>
-                         <span className="font-semibold text-[#2d2621] w-8 text-center">{item.stock}</span>
-                         <button 
-                           onClick={() => handleQuantityUpdate(item.id, 1)}
-                           className="p-1 text-gray-400 hover:text-gray-900 hover:bg-gray-100 rounded transition-colors"
-                           aria-label="Increase quantity"
-                         >
-                           <Plus className="w-3 h-3" />
-                         </button>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 text-[#78716c]">{item.min}</td>
-                    <td className="px-6 py-4 text-[#78716c]">{item.unit}</td>
-                    <td className="px-6 py-4">
-                      <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border ${
-                        item.status === 'In Stock' ? 'bg-green-50 text-green-700 border-green-200' : 
-                        item.status === 'Low Stock' ? 'bg-amber-50 text-amber-700 border-amber-200' :
-                        'bg-red-50 text-red-700 border-red-200'
-                      }`}>
-                        <span className={`w-1.5 h-1.5 rounded-full ${
-                          item.status === 'In Stock' ? 'bg-green-500' : 
-                          item.status === 'Low Stock' ? 'bg-amber-500' : 'bg-red-500'
-                        }`} />
-                        {item.status}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-[#78716c] text-xs">{item.location}</td>
+                    {visibleColumns.description && <td className="px-6 py-4 text-[#78716c]">{item.sku}</td>}
+                    {visibleColumns.category && (
+                      <td className="px-6 py-4">
+                        <span className="text-xs text-[#78716c] bg-[#f5f5f4] px-2 py-1 rounded">{item.category}</span>
+                      </td>
+                    )}
+                    {visibleColumns.stock && (
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-2">
+                           <button 
+                             onClick={() => handleQuantityUpdate(item.id, -1)}
+                             className="p-1 text-gray-400 hover:text-gray-900 hover:bg-gray-100 rounded transition-colors"
+                             aria-label="Decrease quantity"
+                           >
+                             <Minus className="w-3 h-3" />
+                           </button>
+                           <span className="font-semibold text-[#2d2621] w-8 text-center">{item.stock}</span>
+                           <button 
+                             onClick={() => handleQuantityUpdate(item.id, 1)}
+                             className="p-1 text-gray-400 hover:text-gray-900 hover:bg-gray-100 rounded transition-colors"
+                             aria-label="Increase quantity"
+                           >
+                             <Plus className="w-3 h-3" />
+                           </button>
+                        </div>
+                      </td>
+                    )}
+                    {visibleColumns.minStock && <td className="px-6 py-4 text-[#78716c]">{item.min}</td>}
+                    {visibleColumns.unit && <td className="px-6 py-4 text-[#78716c]">{item.unit}</td>}
+                    {visibleColumns.status && (
+                      <td className="px-6 py-4">
+                        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border ${
+                          item.status === 'In Stock' ? 'bg-green-50 text-green-700 border-green-200' : 
+                          item.status === 'Low Stock' ? 'bg-amber-50 text-amber-700 border-amber-200' :
+                          'bg-red-50 text-red-700 border-red-200'
+                        }`}>
+                          <span className={`w-1.5 h-1.5 rounded-full ${
+                            item.status === 'In Stock' ? 'bg-green-500' : 
+                            item.status === 'Low Stock' ? 'bg-amber-500' : 'bg-red-500'
+                          }`} />
+                          {item.status}
+                        </span>
+                      </td>
+                    )}
+                    {visibleColumns.location && <td className="px-6 py-4 text-[#78716c] text-xs">{item.location}</td>}
                     <td className="px-6 py-4 text-right">
                       <div className="flex items-center justify-end gap-2 text-gray-400">
                         <button 
