@@ -12,21 +12,27 @@ import {
 } from 'lucide-react';
 import { createClient } from '@/utils/supabase/client';
 import { useState, useEffect } from 'react';
+import { useProfile } from '@/components/providers/profile-provider';
+import { Users } from 'lucide-react';
 
 const navItems = [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
   { name: 'Inventory', href: '/dashboard/inventory', icon: Package },
   { name: 'Reports', href: '/dashboard/reports', icon: FileText },
+  { name: 'Admin', href: '/dashboard/users', icon: Users, reqAdmin: true },
 ];
 
 export function AppSidebar() {
   const pathname = usePathname();
   const router = useRouter();
   const supabase = createClient();
+  const { profile, isLoading } = useProfile();
 
   const [isOpen, setIsOpen] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
+    setIsMounted(true);
     const handleToggle = () => setIsOpen(prev => !prev);
     document.addEventListener('toggleMobileSidebar', handleToggle);
     return () => document.removeEventListener('toggleMobileSidebar', handleToggle);
@@ -65,6 +71,7 @@ export function AppSidebar() {
         <div>
           <h1 className="text-[10px] font-bold tracking-wider text-white/70 leading-tight">INVENTORY SYSTEM</h1>
           <h2 className="text-sm font-semibold leading-tight">St. Joseph Amity Prime</h2>
+          <h3 className="text-xs text-[#c26941] font-bold mt-1">Role: {profile ? profile.role : (isLoading ? 'loading...' : 'none')}</h3>
         </div>
       </div>
 
@@ -72,6 +79,11 @@ export function AppSidebar() {
       <nav className="flex-1 px-3 py-6 space-y-1 overflow-y-auto">
         <p className="px-3 text-xs font-semibold text-white/50 mb-4 tracking-wider">Main Menu</p>
         {navItems.map((item) => {
+          if (item.reqAdmin) {
+            if (!isMounted) return null; // Prevent hydration error by waiting for client
+            if (profile?.role !== 'admin') return null;
+          }
+          
           const isActive = pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href));
           return (
             <Link

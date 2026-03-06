@@ -13,6 +13,7 @@ import { createClient } from '@/utils/supabase/client';
 import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import { Settings2 } from 'lucide-react';
+import { useProfile } from '@/components/providers/profile-provider';
 
 export function InventoryTable() {
   const { items, addItem, updateItem, deleteItem, updateQuantity } = useInventory();
@@ -22,6 +23,12 @@ export function InventoryTable() {
   const [editingItem, setEditingItem] = useState<any>(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<any>(null);
+  const { profile } = useProfile();
+  
+  const isAdmin = profile?.role === 'admin';
+  const canAdd = isAdmin || profile?.can_add_item;
+  const canEdit = isAdmin || profile?.can_edit_item;
+  const canDelete = isAdmin || profile?.can_delete_item;
   
   // Filter & Search states
   const [searchQuery, setSearchQuery] = useState('');
@@ -304,7 +311,7 @@ export function InventoryTable() {
         <div className="flex items-center gap-2 shrink-0">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" className="hidden sm:flex items-center gap-2 h-[38px] border-[#e7e5e4] text-[#78716c]">
+              <Button variant="outline" size="sm" className="flex items-center gap-2 h-[38px] border-[#e7e5e4] text-[#78716c]">
                 <Settings2 className="w-4 h-4" />
                 View
               </Button>
@@ -357,13 +364,15 @@ export function InventoryTable() {
             </DropdownMenuContent>
           </DropdownMenu>
 
-          <button 
-            onClick={() => setIsAddModalOpen(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-[#c26941] text-white rounded-md text-sm font-medium hover:bg-[#a55633] transition-colors"
-          >
-            <Plus className="w-4 h-4" />
-            Add Item
-          </button>
+          {canAdd && (
+            <button 
+              onClick={() => setIsAddModalOpen(true)}
+              className="flex items-center gap-2 px-4 py-2 bg-[#c26941] text-white rounded-md text-sm font-medium hover:bg-[#a55633] transition-colors"
+            >
+              <Plus className="w-4 h-4" />
+              Add Item
+            </button>
+          )}
         </div>
       </div>
 
@@ -424,21 +433,27 @@ export function InventoryTable() {
                     {visibleColumns.stock && (
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-2">
-                           <button 
-                             onClick={() => handleQuantityUpdate(item.id, -1)}
-                             className="p-1 text-gray-400 hover:text-gray-900 hover:bg-gray-100 rounded transition-colors"
-                             aria-label="Decrease quantity"
-                           >
-                             <Minus className="w-3 h-3" />
-                           </button>
-                           <span className="font-semibold text-[#2d2621] w-8 text-center">{item.stock}</span>
-                           <button 
-                             onClick={() => handleQuantityUpdate(item.id, 1)}
-                             className="p-1 text-gray-400 hover:text-gray-900 hover:bg-gray-100 rounded transition-colors"
-                             aria-label="Increase quantity"
-                           >
-                             <Plus className="w-3 h-3" />
-                           </button>
+                           {canEdit ? (
+                             <>
+                               <button 
+                                 onClick={() => handleQuantityUpdate(item.id, -1)}
+                                 className="p-1 text-gray-400 hover:text-gray-900 hover:bg-gray-100 rounded transition-colors"
+                                 aria-label="Decrease quantity"
+                               >
+                                 <Minus className="w-3 h-3" />
+                               </button>
+                               <span className="font-semibold text-[#2d2621] w-8 text-center">{item.stock}</span>
+                               <button 
+                                 onClick={() => handleQuantityUpdate(item.id, 1)}
+                                 className="p-1 text-gray-400 hover:text-gray-900 hover:bg-gray-100 rounded transition-colors"
+                                 aria-label="Increase quantity"
+                               >
+                                 <Plus className="w-3 h-3" />
+                               </button>
+                             </>
+                           ) : (
+                             <span className="font-semibold text-[#2d2621] px-6 text-center">{item.stock}</span>
+                           )}
                         </div>
                       </td>
                     )}
@@ -462,20 +477,24 @@ export function InventoryTable() {
                     {visibleColumns.location && <td className="px-6 py-4 text-[#78716c] text-xs">{item.location}</td>}
                     <td className="px-6 py-4 text-right">
                       <div className="flex items-center justify-end gap-2 text-gray-400">
-                        <button 
-                          onClick={() => openEditModal(item)}
-                          className="p-1 hover:text-[#c26941] transition-colors"
-                          title="Edit Item"
-                        >
-                          <Edit2 className="w-4 h-4" />
-                        </button>
-                        <button 
-                          onClick={() => handleDeleteItem(item)}
-                          className="p-1 hover:text-red-500 transition-colors"
-                          title="Delete Item"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
+                        {canEdit && (
+                          <button 
+                            onClick={() => openEditModal(item)}
+                            className="p-1 hover:text-[#c26941] transition-colors"
+                            title="Edit Item"
+                          >
+                            <Edit2 className="w-4 h-4" />
+                          </button>
+                        )}
+                        {canDelete && (
+                          <button 
+                            onClick={() => handleDeleteItem(item)}
+                            className="p-1 hover:text-red-500 transition-colors"
+                            title="Delete Item"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        )}
                       </div>
                     </td>
                   </tr>
