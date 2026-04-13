@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { InstallPrompt } from "@/components/ui/install-prompt";
 import "./globals.css";
+import { OrganizationProvider } from '@/context/OrganizationContext';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -45,8 +46,10 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        {children}
-        <InstallPrompt />
+        <OrganizationProvider>
+          {children}
+          <InstallPrompt />
+        </OrganizationProvider>
       </body>
     </html>
   );
