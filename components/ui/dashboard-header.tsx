@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { useNotifications } from '@/components/providers/notification-provider';
 import { useState, useEffect } from 'react';
 import { createClient } from '@/utils/supabase/client';
+import OrgSwitcher from '@/components/OrgSwitcher';
 
 export function DashboardHeader() {
   const { notifications } = useNotifications();
@@ -75,6 +76,8 @@ export function DashboardHeader() {
       <div className="flex-1"></div>
 
       <div className="flex items-center gap-6 ml-auto">
+        <OrgSwitcher />
+
         {/* Notifications */}
         <div className="relative">
           <button 

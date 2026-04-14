@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { completeOnboarding } from '@/lib/auth/onboarding'
 import { supabase } from '@/lib/supabase/client'
@@ -10,6 +10,14 @@ export default function OnboardingPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const router = useRouter()
+
+  useEffect(() => {
+    // If user arrived from an invite link and registered, route them back!
+    const pendingToken = sessionStorage.getItem('pending_invite_token');
+    if (pendingToken) {
+      router.push(`/invite?token=${pendingToken}`);
+    }
+  }, [router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()

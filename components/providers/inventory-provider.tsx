@@ -84,7 +84,7 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
     const { ...itemDataWithoutId } = item as any;
     
     const { error } = await supabase.from('inventory').insert([{ ...itemDataWithoutId, status }]);
-    if (error) console.error("Error adding item:", error);
+    if (error) console.error("Error adding item:", error.message, error.details || error);
   };
 
   const updateItem = async (id: number, updatedItem: Partial<InventoryItem>) => {

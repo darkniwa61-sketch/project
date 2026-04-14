@@ -72,7 +72,7 @@ export function ActivityProvider({ children }: { children: ReactNode }) {
     };
     
     const { error } = await supabase.from('activities').insert([newEvent]);
-    if (error) console.error("Error logging activity:", error);
+    if (error) console.error("Error logging activity:", error.message, error.details || error);
   };
 
   return (

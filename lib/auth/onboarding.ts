@@ -23,7 +23,7 @@ export async function completeOnboarding(
   const { data, error } = await supabase.rpc('handle_new_organization', {
     p_user_id:   params.userId,
     p_org_name:  params.orgName,
-    p_full_name: params.fullName ?? null,
+    p_full_name: params.fullName ?? undefined,
   })
 
   if (error) {
@@ -37,5 +37,5 @@ export async function completeOnboarding(
     console.warn('[onboarding] Session refresh failed:', refreshError.message)
   }
 
-  return data as OnboardingResult
+  return data as unknown as OnboardingResult
 }

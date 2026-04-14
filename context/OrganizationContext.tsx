@@ -5,6 +5,7 @@ import {
   useContext,
   useEffect,
   useState,
+  useCallback,
   type ReactNode,
 } from 'react'
 import { supabase } from '@/lib/supabase/client'
@@ -31,38 +32,30 @@ export function OrganizationProvider({ children }: { children: ReactNode }) {
   const [orgName,   setOrgName]   = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 
-  useEffect(() => {
-    loadOrgFromSession()
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
-        if (session) loadOrgFromSession()
-        else {
-          setOrgId(null)
-          setOrgRole(null)
-          setOrgName(null)
-        }
-      }
-    )
-
-    return () => subscription.unsubscribe()
-  }, [])
-
-  async function loadOrgFromSession() {
+  const loadOrgFromSession = useCallback(async () => {
     setIsLoading(true)
     try {
       const { data: { session } } = await supabase.auth.getSession()
-      if (!session) return
+      if (!session) {
+        setOrgId(null); setOrgRole(null); setOrgName(null)
+        return
+      }
 
       const payload = JSON.parse(atob(session.access_token.split('.')[1]))
-      const currentOrgId = payload?.org_id as string | undefined
-
-      if (!currentOrgId) return
+      
+      console.log('[OrganizationContext] JWT Payload:', payload)
+      
+      const currentOrgId = payload?.org_id || payload?.app_metadata?.org_id || payload?.user_metadata?.org_id
+      if (!currentOrgId) {
+        console.warn('[OrganizationContext] No org_id found in JWT payload. Is the Supabase Auth Hook enabled?')
+        return
+      }
 
       setOrgId(currentOrgId)
-      setOrgRole(payload?.org_role ?? null)
+      
+      const role = payload?.org_role || payload?.app_metadata?.org_role || payload?.user_metadata?.org_role
+      setOrgRole(role ?? null)
 
-      // Fetch org name for display
       const { data: org } = await supabase
         .from('organizations')
         .select('name')
@@ -73,19 +66,39 @@ export function OrganizationProvider({ children }: { children: ReactNode }) {
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [])
 
-  /**
-   * Switches the active organization for multi-org users.
-   * Refreshes the session so the JWT carries the new org_id.
-   * NOTE: for a full org-switcher you'll need a server action that
-   * updates a cookie/DB flag so the JWT hook returns the chosen org.
-   */
-  async function switchOrg(newOrgId: string) {
-    // TODO: call a server action / edge function that sets the
-    // user's preferred_org_id and then refreshes the session.
-    console.warn('switchOrg: implement preferred org persistence first')
-  }
+  useEffect(() => {
+    loadOrgFromSession()
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (_event, session) => {
+        if (session) loadOrgFromSession()
+        else { setOrgId(null); setOrgRole(null); setOrgName(null) }
+      }
+    )
+
+    return () => subscription.unsubscribe()
+  }, [loadOrgFromSession])
+
+  // Switches the active org, refreshes the JWT, re-loads context
+  const switchOrg = useCallback(async (newOrgId: string) => {
+    // @ts-ignore - Suppressing until 'supabase gen types' is run to capture Migration 005
+    const { error } = await supabase.rpc('switch_active_organization', {
+      new_org_id: newOrgId,
+    })
+
+    if (error) {
+      console.error('[switchOrg] RPC failed:', error.message)
+      throw new Error(error.message)
+    }
+
+    // Refresh session → JWT hook picks up new preferred_org_id
+    await supabase.auth.refreshSession()
+
+    // Re-load org context from the new token
+    await loadOrgFromSession()
+  }, [loadOrgFromSession])
 
   return (
     <OrganizationContext.Provider

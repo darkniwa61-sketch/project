@@ -1,4 +1,5 @@
 import { createClient } from '@/utils/supabase/server'
+import { getServerOrgContext } from '@/lib/auth/organization'
 
 export type UserRole = 'admin' | 'staff'
 
@@ -38,9 +39,15 @@ export async function getUserProfile(): Promise<UserProfile | null> {
 }
 
 export async function requireAdmin() {
+    const orgContext = await getServerOrgContext()
+    const isOrgAdmin = orgContext && ['admin', 'owner'].includes(orgContext.orgRole ?? '')
+    
     const profile = await getUserProfile()
-    if (!profile || profile.role !== 'admin') {
+    
+    // Allow access if they are an org admin/owner OR a global system admin
+    if (!profile || (!isOrgAdmin && profile.role !== 'admin')) {
          throw new Error('Unauthorized: Admin access required')
     }
+    
     return profile
 }
