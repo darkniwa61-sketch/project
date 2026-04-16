@@ -28,8 +28,8 @@ export function AddItemModal({ isOpen, onClose, onAdd }: AddItemModalProps) {
     e.preventDefault();
     
     // Determine status based on stock vs min
-    const stockNum = parseInt(formData.stock) || 0;
-    const minNum = parseInt(formData.min) || 0;
+    const stockNum = parseFloat(formData.stock) || 0;
+    const minNum = parseFloat(formData.min) || 0;
     let status = 'In Stock';
     if (stockNum === 0) status = 'Out of Stock';
     else if (stockNum <= minNum) status = 'Low Stock';
@@ -97,11 +97,11 @@ export function AddItemModal({ isOpen, onClose, onAdd }: AddItemModalProps) {
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="stock">Current Stock</Label>
-              <Input id="stock" name="stock" type="number" required value={formData.stock} onChange={handleChange} placeholder="0" />
+              <Input id="stock" name="stock" type="number" step="any" required value={formData.stock} onChange={handleChange} placeholder="0" />
             </div>
             <div className="space-y-2">
               <Label htmlFor="min">Min Stock Level</Label>
-              <Input id="min" name="min" type="number" required value={formData.min} onChange={handleChange} placeholder="10" />
+              <Input id="min" name="min" type="number" step="any" required value={formData.min} onChange={handleChange} placeholder="10" />
             </div>
           </div>
 

@@ -8,7 +8,7 @@ import {
   FileText, 
   Settings, 
   LogOut,
-  Hexagon
+  Zap
 } from 'lucide-react';
 import { createClient } from '@/utils/supabase/client';
 import { useState, useEffect } from 'react';
@@ -64,14 +64,14 @@ export function AppSidebar() {
         ${isOpen ? 'translate-x-0' : '-translate-x-full'}
       `}>
       {/* Sidebar Header / Logo */}
-      <div className="flex items-center gap-3 p-6 shrink-0 border-b border-[#2d2621]/50">
-        <div className="bg-[#c26941] p-1.5 rounded-md flex items-center justify-center">
-          <Hexagon className="w-5 h-5 text-white" />
+      <div className="flex items-center gap-3 p-6 shrink-0 border-b border-white/5">
+        <div className="bg-[#06b6d4] p-1.5 rounded-lg flex items-center justify-center shadow-[0_0_15px_rgba(6,182,212,0.3)]">
+          <Zap className="w-5 h-5 text-black" fill="currentColor" />
         </div>
         <div>
-          <h1 className="text-[10px] font-bold tracking-wider text-white/70 leading-tight">INVENTORY SYSTEM</h1>
-          <h2 className="text-sm font-semibold leading-tight">St. Joseph Amity Prime</h2>
-          <h3 className="text-xs text-[#c26941] font-bold mt-1">Role: {profile ? profile.role : (isLoading ? 'loading...' : 'none')}</h3>
+          <h1 className="text-[10px] font-bold tracking-widest text-[#06b6d4] leading-tight uppercase">Management</h1>
+          <h2 className="text-sm font-bold leading-tight text-white tracking-tight">R&J</h2>
+          <h3 className="text-[9px] text-white/40 font-medium mt-1 uppercase tracking-tighter">Role: {profile ? profile.role : (isLoading ? 'loading...' : 'none')}</h3>
         </div>
       </div>
 
@@ -91,11 +91,11 @@ export function AppSidebar() {
               href={item.href}
               className={`flex items-center gap-3 px-3 py-2.5 rounded-md text-sm transition-colors ${
                 isActive 
-                  ? 'bg-white/10 text-white font-medium' 
-                  : 'text-white/70 hover:bg-white/5 hover:text-white'
+                  ? 'bg-[#06b6d4]/10 text-[#06b6d4] font-semibold' 
+                  : 'text-white/60 hover:bg-white/5 hover:text-white'
               }`}
             >
-              <item.icon className={`w-4 h-4 ${isActive ? 'text-[#c26941]' : ''}`} />
+              <item.icon className={`w-4 h-4 ${isActive ? 'text-[#06b6d4]' : ''}`} />
               {item.name}
             </Link>
           );

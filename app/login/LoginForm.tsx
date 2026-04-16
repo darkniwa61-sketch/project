@@ -17,23 +17,23 @@ export default function LoginForm({ errorMsg, successMsg }: { errorMsg: string |
         <AuthLayout>
             <div className="flex flex-col space-y-6">
                 <div className="flex flex-col space-y-2 mb-2">
-                    <h1 className="text-2xl font-semibold tracking-tight text-[#2d2621]">
+                    <h1 className="text-3xl font-bold tracking-tight text-white">
                         Welcome back
                     </h1>
-                    <p className="text-sm text-muted-foreground">
-                        Enter your credentials to access your inventory dashboard
+                    <p className="text-sm text-slate-400">
+                        Authenticate to access your R&J Management dashboard
                     </p>
                 </div>
 
                 {errorMsg && (
-                    <div className="bg-destructive/15 text-destructive text-sm p-3 rounded-md flex items-center gap-2">
+                    <div className="bg-destructive/15 text-destructive text-sm p-3 rounded-xl flex items-center gap-2 border border-destructive/20">
                         <AlertCircle className="h-4 w-4" />
                         <p>{errorMsg}</p>
                     </div>
                 )}
                 
                 {successMsg && (
-                    <div className="bg-emerald-50 text-emerald-600 text-sm p-3 rounded-md flex items-center gap-2 border border-emerald-200">
+                    <div className="bg-emerald-500/10 text-emerald-400 text-sm p-3 rounded-xl flex items-center gap-2 border border-emerald-500/20">
                         <CheckCircle2 className="h-4 w-4" />
                         <p>{successMsg}</p>
                     </div>
@@ -41,18 +41,18 @@ export default function LoginForm({ errorMsg, successMsg }: { errorMsg: string |
 
                 <form className="space-y-4" action={login}>
                     <div className="space-y-2">
-                        <Label htmlFor="email">Email</Label>
-                        <Input id="email" name="email" type="email" placeholder="you@company.com" required />
+                        <Label htmlFor="email" className="text-slate-300 ml-1 uppercase text-[10px] font-bold tracking-widest">Email Address</Label>
+                        <Input id="email" name="email" type="email" placeholder="you@rj-management.com" required className="bg-white/5 border-white/10 text-white rounded-xl h-11" />
                     </div>
 
                     <div className="space-y-2">
-                        <div className="flex items-center justify-between">
-                            <Label htmlFor="password">Password</Label>
+                        <div className="flex items-center justify-between ml-1">
+                            <Label htmlFor="password" className="text-slate-300 uppercase text-[10px] font-bold tracking-widest">Password</Label>
                             <Link
                                 href="/forgot-password"
-                                className="text-xs text-muted-foreground hover:text-[#2d2621] hover:underline"
+                                className="text-[10px] uppercase font-bold tracking-widest text-[#06b6d4] hover:text-white transition-colors"
                             >
-                                Forgot password?
+                                Forgot?
                             </Link>
                         </div>
                         <div className="relative">
@@ -60,13 +60,13 @@ export default function LoginForm({ errorMsg, successMsg }: { errorMsg: string |
                                 id="password"
                                 name="password"
                                 type={showPassword ? "text" : "password"}
-                                placeholder="Enter your password"
+                                placeholder="••••••••"
                                 required
-                                className="pr-10"
+                                className="pr-10 bg-white/5 border-white/10 text-white rounded-xl h-11"
                             />
                             <button
                                 type="button"
-                                className="absolute inset-y-0 right-0 pr-3 flex items-center text-muted-foreground hover:text-foreground"
+                                className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-500 hover:text-white"
                                 onClick={() => setShowPassword(!showPassword)}
                             >
                                 {showPassword ? (
@@ -74,20 +74,19 @@ export default function LoginForm({ errorMsg, successMsg }: { errorMsg: string |
                                 ) : (
                                     <Eye className="h-4 w-4" />
                                 )}
-                                <span className="sr-only">Toggle password visibility</span>
                             </button>
                         </div>
                     </div>
 
-                    <Button type="submit" className="w-full bg-[#2a2421] text-white hover:bg-[#2a2421]/90 h-11 text-base">
+                    <Button type="submit" className="w-full bg-[#06b6d4] text-[#0a0b12] hover:bg-[#0891b2] h-12 text-sm font-black uppercase tracking-widest rounded-xl shadow-[0_0_20px_rgba(6,182,212,0.15)] hover:shadow-[0_0_25px_rgba(6,182,212,0.25)] transition-all">
                         Sign in &rarr;
                     </Button>
 
                 </form>
 
-                <div className="text-center text-sm text-muted-foreground">
+                <div className="text-center text-sm text-slate-400">
                     Don&apos;t have an account?{" "}
-                    <Link href="/register" className="font-semibold text-[#2d2621] hover:underline">
+                    <Link href="/register" className="font-bold text-[#06b6d4] hover:text-white transition-colors underline underline-offset-4 decoration-[#06b6d4]/30">
                         Create account
                     </Link>
                 </div>

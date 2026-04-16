@@ -15,13 +15,13 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "St. Joseph APDC",
-  description: "St. Joseph's Inventory Management System",
+  title: "R&J Management",
+  description: "R&J Management - Professional Inventory Management System",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "St. Joseph APDC",
+    title: "R&J Management",
   },
   icons: {
     icon: "/icon-192x192.png",
@@ -30,7 +30,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#1c1917",
+  themeColor: "#0a0b12",
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,

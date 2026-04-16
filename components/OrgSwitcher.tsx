@@ -11,13 +11,34 @@ interface OrgOption {
   is_active:       boolean
 }
 
-export default function OrgSwitcher() {
+interface OrgSwitcherProps {
+  externalOpen?: boolean
+  onOpenChange?: (open: boolean) => void
+}
+
+export default function OrgSwitcher({ externalOpen, onOpenChange }: OrgSwitcherProps = {}) {
   const { orgName, orgRole, switchOrg }   = useOrganization()
   const [orgs, setOrgs]                   = useState<OrgOption[]>([])
   const [isOpen, setIsOpen]               = useState(false)
   const [isSwitching, setIsSwitching]     = useState(false)
   const [switchingId, setSwitchingId]     = useState<string | null>(null)
   const dropdownRef                       = useRef<HTMLDivElement>(null)
+
+  // Sync with external controller
+  useEffect(() => {
+    if (externalOpen !== undefined) setIsOpen(externalOpen)
+  }, [externalOpen])
+
+  function toggleOpen() {
+    const next = !isOpen
+    setIsOpen(next)
+    onOpenChange?.(next)
+  }
+
+  function closeDropdown() {
+    setIsOpen(false)
+    onOpenChange?.(false)
+  }
 
   useEffect(() => {
     loadOrgs()
@@ -27,26 +48,39 @@ export default function OrgSwitcher() {
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
-        setIsOpen(false)
+        closeDropdown()
       }
     }
     document.addEventListener('mousedown', handleClickOutside)
     return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [])
+  }, [isOpen])
 
   async function loadOrgs() {
     const { data, error } = await supabase.rpc('get_my_organizations')
     if (!error && data) setOrgs(data)
   }
 
-  async function handleSwitch(orgId: string) {
+  async function handleSwitch(orgId: string, alreadyActive: boolean) {
     if (isSwitching) return
+    
+    // If already active, just close the dropdown and do nothing else
+    if (alreadyActive) {
+      closeDropdown()
+      return
+    }
+
     setIsSwitching(true)
     setSwitchingId(orgId)
+    console.log('[OrgSwitcher] Switching to:', orgId)
+
     try {
       await switchOrg(orgId)
       await loadOrgs()       // refresh the list so is_active updates
-      setIsOpen(false)
+      
+      // Forces a page refresh to ensure all components see the new org_id in headers/cookies
+      window.location.reload() 
+      
+      closeDropdown()
     } catch (err) {
       console.error('[OrgSwitcher] switch failed:', err)
     } finally {
@@ -76,7 +110,7 @@ export default function OrgSwitcher() {
 
       {/* Trigger button */}
       <button
-        onClick={() => setIsOpen(prev => !prev)}
+        onClick={toggleOpen}
         style={{
           display:      'flex',
           alignItems:   'center',
@@ -139,7 +173,7 @@ export default function OrgSwitcher() {
           border:       '0.5px solid var(--color-border-secondary)',
           borderRadius: 'var(--border-radius-lg)',
           boxShadow:    '0 4px 16px rgba(0,0,0,0.08)',
-          zIndex:       100,
+          zIndex:       50,
           overflow:     'hidden',
         }}>
 
@@ -163,8 +197,8 @@ export default function OrgSwitcher() {
             {orgs.map(org => (
               <button
                 key={org.organization_id}
-                onClick={() => !org.is_active && handleSwitch(org.organization_id)}
-                disabled={org.is_active || isSwitching}
+                onClick={() => handleSwitch(org.organization_id, org.is_active)}
+                className="org-switcher-item"
                 style={{
                   width:          '100%',
                   display:        'flex',
@@ -177,12 +211,14 @@ export default function OrgSwitcher() {
                   textAlign:      'left',
                   opacity:        switchingId === org.organization_id ? 0.6 : 1,
                   transition:     'background 0.1s',
+                  cursor:         'pointer',
+                  userSelect:     'none',
                 }}
                 onMouseEnter={e => {
-                  if (!org.is_active) (e.currentTarget as HTMLElement).style.background = 'var(--color-background-secondary)'
+                  e.currentTarget.style.background = 'var(--color-background-secondary)'
                 }}
                 onMouseLeave={e => {
-                  if (!org.is_active) (e.currentTarget as HTMLElement).style.background = 'transparent'
+                  if (!org.is_active) e.currentTarget.style.background = 'transparent'
                 }}
               >
                 {/* Avatar */}

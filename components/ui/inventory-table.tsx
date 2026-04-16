@@ -271,7 +271,7 @@ export function InventoryTable() {
             <Input 
               type="search" 
               placeholder="Search by name, description, location, or category..." 
-              className="pl-9 w-full bg-white border-[#e7e5e4] focus-visible:ring-[#c26941]"
+              className="pl-9 w-full bg-white border-[#e7e5e4] focus-visible:ring-[#06b6d4]"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
@@ -280,7 +280,7 @@ export function InventoryTable() {
           <div className="hidden md:flex items-center gap-2">
             <div className="relative">
               <select
-                className="appearance-none flex items-center gap-2 pl-3 pr-8 py-2 bg-white border border-[#e7e5e4] rounded-md text-sm text-[#2d2621] hover:bg-[#f5f5f4] transition-colors focus:outline-none focus:ring-1 focus:ring-[#c26941] cursor-pointer"
+                className="appearance-none flex items-center gap-2 pl-3 pr-8 py-2 bg-white border border-[#e7e5e4] rounded-md text-sm text-[#2d2621] hover:bg-[#f5f5f4] transition-colors focus:outline-none focus:ring-1 focus:ring-[#06b6d4] cursor-pointer"
                 value={categoryFilter}
                 onChange={(e) => setCategoryFilter(e.target.value)}
               >
@@ -294,7 +294,7 @@ export function InventoryTable() {
 
             <div className="relative">
               <select
-                className="appearance-none flex items-center gap-2 pl-3 pr-8 py-2 bg-white border border-[#e7e5e4] rounded-md text-sm text-[#2d2621] hover:bg-[#f5f5f4] transition-colors focus:outline-none focus:ring-1 focus:ring-[#c26941] cursor-pointer"
+                className="appearance-none flex items-center gap-2 pl-3 pr-8 py-2 bg-white border border-[#e7e5e4] rounded-md text-sm text-[#2d2621] hover:bg-[#f5f5f4] transition-colors focus:outline-none focus:ring-1 focus:ring-[#06b6d4] cursor-pointer"
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
               >
@@ -367,7 +367,7 @@ export function InventoryTable() {
           {canAdd && (
             <button 
               onClick={() => setIsAddModalOpen(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-[#c26941] text-white rounded-md text-sm font-medium hover:bg-[#a55633] transition-colors"
+              className="flex items-center gap-2 px-4 py-2 bg-[#06b6d4] text-white rounded-md text-sm font-medium hover:bg-[#0891b2] transition-colors"
             >
               <Plus className="w-4 h-4" />
               Add Item
@@ -396,7 +396,7 @@ export function InventoryTable() {
                     onClick={() => handleSort('name')}
                   >
                     Product Name 
-                    <ArrowUpDown className={`w-3 h-3 ${sortConfig.key === 'name' && sortConfig.direction ? 'text-[#c26941]' : ''}`} />
+                    <ArrowUpDown className={`w-3 h-3 ${sortConfig.key === 'name' && sortConfig.direction ? 'text-[#06b6d4]' : ''}`} />
                   </div>
                 </th>
                 {visibleColumns.description && <th className="px-6 py-4">Description</th>}
@@ -408,7 +408,7 @@ export function InventoryTable() {
                       onClick={() => handleSort('stock')}
                     >
                       Stock 
-                      <ArrowUpDown className={`w-3 h-3 ${sortConfig.key === 'stock' && sortConfig.direction ? 'text-[#c26941]' : ''}`} />
+                      <ArrowUpDown className={`w-3 h-3 ${sortConfig.key === 'stock' && sortConfig.direction ? 'text-[#06b6d4]' : ''}`} />
                     </div>
                   </th>
                 )}
@@ -480,7 +480,7 @@ export function InventoryTable() {
                         {canEdit && (
                           <button 
                             onClick={() => openEditModal(item)}
-                            className="p-1 hover:text-[#c26941] transition-colors"
+                            className="p-1 hover:text-[#06b6d4] transition-colors"
                             title="Edit Item"
                           >
                             <Edit2 className="w-4 h-4" />
@@ -530,7 +530,7 @@ export function InventoryTable() {
                 onClick={() => setCurrentPage(page)}
                 className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
                   currentPage === page 
-                    ? 'bg-[#c26941] text-white' 
+                    ? 'bg-[#06b6d4] text-white' 
                     : 'hover:bg-[#f5f5f4] text-[#2d2621]'
                 }`}
               >

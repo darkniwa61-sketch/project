@@ -18,11 +18,14 @@ export async function POST(request: Request) {
     }
   )
 
-  const { role, email } = await request.json()
+  const { code } = await request.json()
 
-  const { data, error } = await supabase.rpc('create_org_invite', {
-    p_role:          role ?? 'member',
-    p_invited_email: email ?? null,
+  if (!code || typeof code !== 'string') {
+    return NextResponse.json({ error: 'Invite code is required' }, { status: 400 })
+  }
+
+  const { data, error } = await supabase.rpc('accept_org_invite', {
+    p_code: code.trim().toUpperCase(),
   })
 
   if (error) {
@@ -31,5 +34,9 @@ export async function POST(request: Request) {
 
   const result = data as any
 
-  return NextResponse.json({ code: result?.code, expiresAt: result?.expires_at })
+  return NextResponse.json({
+    success:         true,
+    organization_id: result?.organization_id,
+    role:            result?.role,
+  })
 }

@@ -10,6 +10,7 @@ import OrgSwitcher from '@/components/OrgSwitcher';
 export function DashboardHeader() {
   const { notifications } = useNotifications();
   const [showNotifications, setShowNotifications] = useState(false);
+  const [orgSwitcherOpen, setOrgSwitcherOpen] = useState(false);
   const [userProfile, setUserProfile] = useState<{ initials: string; fullName: string; role: string; email: string; avatarUrl?: string } | null>(null);
   const supabase = createClient();
 
@@ -76,17 +77,27 @@ export function DashboardHeader() {
       <div className="flex-1"></div>
 
       <div className="flex items-center gap-6 ml-auto">
-        <OrgSwitcher />
+        <OrgSwitcher
+          externalOpen={orgSwitcherOpen}
+          onOpenChange={(open) => {
+            setOrgSwitcherOpen(open)
+            if (open) setShowNotifications(false)
+          }}
+        />
 
         {/* Notifications */}
         <div className="relative">
           <button 
-            onClick={() => setShowNotifications(!showNotifications)}
+            onClick={() => {
+              const next = !showNotifications
+              setShowNotifications(next)
+              if (next) setOrgSwitcherOpen(false)
+            }}
             className="relative text-gray-500 hover:text-gray-900 transition-colors focus:outline-none"
           >
             <Bell className="w-5 h-5" />
             {notifications.length > 0 && (
-              <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-[#c26941] text-[10px] font-bold text-white">
+              <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-[#06b6d4] text-[10px] font-bold text-black shadow-[0_0_8px_rgba(6,182,212,0.6)]">
                 {notifications.length}
               </span>
             )}
@@ -126,8 +137,8 @@ export function DashboardHeader() {
         </div>
 
         {/* User Profile */}
-        <div className="flex items-center gap-3 cursor-pointer">
-          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#c26941] text-xs font-bold text-white overflow-hidden shrink-0 border border-[#e7e5e4]">
+        <div className="flex items-center gap-3 cursor-pointer group">
+          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#06b6d4] text-xs font-bold text-black overflow-hidden shrink-0 border border-white/10 shadow-[0_0_10px_rgba(6,182,212,0.2)] group-hover:shadow-[0_0_15px_rgba(6,182,212,0.4)] transition-all">
             {userProfile?.avatarUrl ? (
               <img src={userProfile.avatarUrl} alt={userProfile.fullName} className="h-full w-full object-cover" />
             ) : (

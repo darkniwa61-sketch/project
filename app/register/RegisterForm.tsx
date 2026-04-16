@@ -17,16 +17,16 @@ export default function RegisterForm({ errorMsg }: { errorMsg: string | null }) 
         <AuthLayout>
             <div className="flex flex-col space-y-6">
                 <div className="flex flex-col space-y-2 mb-2">
-                    <h1 className="text-2xl font-semibold tracking-tight text-[#2d2621]">
-                        Create your account
+                    <h1 className="text-3xl font-bold tracking-tight text-white">
+                        Join R&J
                     </h1>
-                    <p className="text-sm text-muted-foreground">
-                        Get started and take control of your inventory
+                    <p className="text-sm text-slate-400">
+                        Register your location to begin professional inventory oversight
                     </p>
                 </div>
 
                 {errorMsg && (
-                    <div className="bg-destructive/15 text-destructive text-sm p-3 rounded-md flex items-center gap-2">
+                    <div className="bg-destructive/15 text-destructive text-sm p-3 rounded-xl flex items-center gap-2 border border-destructive/20">
                         <AlertCircle className="h-4 w-4" />
                         <p>{errorMsg}</p>
                     </div>
@@ -35,39 +35,39 @@ export default function RegisterForm({ errorMsg }: { errorMsg: string | null }) 
                 <form className="space-y-4" action={signup}>
                     <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
-                            <Label htmlFor="first-name">First name</Label>
-                            <Input id="first-name" name="first-name" placeholder="John" required />
+                            <Label htmlFor="first-name" className="text-slate-300 ml-1 uppercase text-[10px] font-bold tracking-widest">First name</Label>
+                            <Input id="first-name" name="first-name" placeholder="John" required className="bg-white/5 border-white/10 text-white rounded-xl h-11" />
                         </div>
                         <div className="space-y-2">
-                            <Label htmlFor="last-name">Last name</Label>
-                            <Input id="last-name" name="last-name" placeholder="Doe" required />
+                            <Label htmlFor="last-name" className="text-slate-300 ml-1 uppercase text-[10px] font-bold tracking-widest">Last name</Label>
+                            <Input id="last-name" name="last-name" placeholder="Doe" required className="bg-white/5 border-white/10 text-white rounded-xl h-11" />
                         </div>
                     </div>
 
                     <div className="space-y-2">
-                        <Label htmlFor="location">Location name</Label>
-                        <Input id="location" name="location" placeholder="e.g. Warehouse A, Manila Branch" required />
+                        <Label htmlFor="location" className="text-slate-300 ml-1 uppercase text-[10px] font-bold tracking-widest">Facility / Office Name</Label>
+                        <Input id="location" name="location" placeholder="e.g. Main HQ, Manila Hub" required className="bg-white/5 border-white/10 text-white rounded-xl h-11" />
                     </div>
 
                     <div className="space-y-2">
-                        <Label htmlFor="email">Email</Label>
-                        <Input id="email" name="email" type="email" placeholder="you@company.com" required />
+                        <Label htmlFor="email" className="text-slate-300 ml-1 uppercase text-[10px] font-bold tracking-widest">Email Address</Label>
+                        <Input id="email" name="email" type="email" placeholder="you@rj-management.com" required className="bg-white/5 border-white/10 text-white rounded-xl h-11" />
                     </div>
 
                     <div className="space-y-2">
-                        <Label htmlFor="password">Password</Label>
+                        <Label htmlFor="password" className="text-slate-300 ml-1 uppercase text-[10px] font-bold tracking-widest">Access Password</Label>
                         <div className="relative">
                             <Input
                                 id="password"
                                 name="password"
                                 type={showPassword ? "text" : "password"}
-                                placeholder="Create a strong password"
+                                placeholder="••••••••"
                                 required
-                                className="pr-10"
+                                className="pr-10 bg-white/5 border-white/10 text-white rounded-xl h-11"
                             />
                             <button
                                 type="button"
-                                className="absolute inset-y-0 right-0 pr-3 flex items-center text-muted-foreground hover:text-foreground"
+                                className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-500 hover:text-white"
                                 onClick={() => setShowPassword(!showPassword)}
                             >
                                 {showPassword ? (
@@ -75,15 +75,21 @@ export default function RegisterForm({ errorMsg }: { errorMsg: string | null }) 
                                 ) : (
                                     <Eye className="h-4 w-4" />
                                 )}
-                                <span className="sr-only">Toggle password visibility</span>
                             </button>
                         </div>
                     </div>
 
-                    <Button type="submit" className="w-full bg-[#2a2421] text-white hover:bg-[#2a2421]/90 h-11 text-base">
+                    <Button type="submit" className="w-full bg-[#06b6d4] text-[#0a0b12] hover:bg-[#0891b2] h-12 text-sm font-black uppercase tracking-widest rounded-xl shadow-[0_0_20px_rgba(6,182,212,0.15)] hover:shadow-[0_0_25px_rgba(6,182,212,0.25)] transition-all">
                         Create account &rarr;
                     </Button>
                 </form>
+
+                <div className="text-center text-sm text-slate-400">
+                    Already have an account?{" "}
+                    <Link href="/login" className="font-bold text-[#06b6d4] hover:text-white transition-colors underline underline-offset-4 decoration-[#06b6d4]/30">
+                        Sign in
+                    </Link>
+                </div>
             </div>
         </AuthLayout>
     )
