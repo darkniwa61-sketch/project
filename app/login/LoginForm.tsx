@@ -42,7 +42,7 @@ export default function LoginForm({ errorMsg, successMsg }: { errorMsg: string |
                 <form className="space-y-4" action={login}>
                     <div className="space-y-2">
                         <Label htmlFor="email" className="text-slate-300 ml-1 uppercase text-[10px] font-bold tracking-widest">Email Address</Label>
-                        <Input id="email" name="email" type="email" placeholder="you@rj-management.com" required className="bg-white/5 border-white/10 text-white rounded-xl h-11" />
+                        <Input id="email" name="email" type="email" placeholder="you@rj-management.com" required maxLength={100} className="bg-white/5 border-white/10 text-white rounded-xl h-11" />
                     </div>
 
                     <div className="space-y-2">
@@ -62,6 +62,7 @@ export default function LoginForm({ errorMsg, successMsg }: { errorMsg: string |
                                 type={showPassword ? "text" : "password"}
                                 placeholder="••••••••"
                                 required
+                                maxLength={100}
                                 className="pr-10 bg-white/5 border-white/10 text-white rounded-xl h-11"
                             />
                             <button

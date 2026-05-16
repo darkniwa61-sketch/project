@@ -141,6 +141,7 @@ export function ReportsView() {
             placeholder="Search by user, product, or action..." 
             className="pl-9 w-full bg-white border-[#e7e5e4] focus-visible:ring-[#c26941]"
             value={searchQuery}
+            maxLength={100}
             onChange={(e) => {
               setSearchQuery(e.target.value);
               setCurrentPage(1); // Reset page on search

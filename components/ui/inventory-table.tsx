@@ -273,6 +273,7 @@ export function InventoryTable() {
               placeholder="Search by name, description, location, or category..." 
               className="pl-9 w-full bg-white border-[#e7e5e4] focus-visible:ring-[#06b6d4]"
               value={searchQuery}
+              maxLength={100}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>

@@ -29,16 +29,16 @@ export default function ForgotPasswordForm({ errorMsg }: { errorMsg: string | nu
         <AuthLayout>
             <div className="flex flex-col space-y-6">
                 <div className="flex flex-col space-y-2 mb-2">
-                    <h1 className="text-2xl font-semibold tracking-tight text-[#2d2621]">
+                    <h1 className="text-3xl font-bold tracking-tight text-white">
                         Reset your password
                     </h1>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-sm text-slate-400">
                         Enter your email address and we&apos;ll send you a link to reset your password.
                     </p>
                 </div>
 
                 {errorMsg && (
-                    <div className="bg-destructive/15 text-destructive text-sm p-3 rounded-md flex items-center gap-2">
+                    <div className="bg-destructive/15 text-destructive text-sm p-3 rounded-xl flex items-center gap-2 border border-destructive/20">
                         <AlertCircle className="h-4 w-4" />
                         <p>{errorMsg}</p>
                     </div>
@@ -46,17 +46,21 @@ export default function ForgotPasswordForm({ errorMsg }: { errorMsg: string | nu
 
                 <form className="space-y-4" action={resetPasswordForEmail}>
                     <div className="space-y-2">
-                        <Label htmlFor="email">Email</Label>
-                        <Input id="email" name="email" type="email" placeholder="you@company.com" required />
+                        <Label htmlFor="email" className="text-slate-300 ml-1 uppercase text-[10px] font-bold tracking-widest">Email Address</Label>
+                        <Input id="email" name="email" type="email" placeholder="you@rj-management.com" required maxLength={100} className="bg-white/5 border-white/10 text-white rounded-xl h-11" />
                     </div>
 
-                    <SubmitButton />
-
+                    <Button 
+                        type="submit" 
+                        className="w-full bg-[#06b6d4] text-[#0a0b12] hover:bg-[#0891b2] h-12 text-sm font-black uppercase tracking-widest rounded-xl shadow-[0_0_20px_rgba(6,182,212,0.15)] hover:shadow-[0_0_25px_rgba(6,182,212,0.25)] transition-all"
+                    >
+                        Send reset link &rarr;
+                    </Button>
                 </form>
 
-                <div className="text-center text-sm text-muted-foreground">
+                <div className="text-center text-sm text-slate-400">
                     Remember your password?{" "}
-                    <Link href="/login" className="font-semibold text-[#2d2621] hover:underline">
+                    <Link href="/login" className="font-bold text-[#06b6d4] hover:text-white transition-colors underline underline-offset-4 decoration-[#06b6d4]/30">
                         Back to login
                     </Link>
                 </div>

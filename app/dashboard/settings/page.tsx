@@ -58,6 +58,13 @@ export default function SettingsPage() {
     if (!e.target.files || e.target.files.length === 0) return;
     
     const file = e.target.files[0];
+    
+    if (!file.type.startsWith('image/')) {
+      setMessage({ type: 'error', text: 'Please select a valid image file.' });
+      if (fileInputRef.current) fileInputRef.current.value = '';
+      return;
+    }
+
     const fileExt = file.name.split('.').pop();
     const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
     const filePath = `${fileName}`;
@@ -215,6 +222,7 @@ export default function SettingsPage() {
                 name="firstName"
                 value={formData.firstName}
                 onChange={handleChange}
+                maxLength={50}
                 className="border-[#e7e5e4] focus-visible:ring-[#c26941]"
               />
             </div>
@@ -225,6 +233,7 @@ export default function SettingsPage() {
                 name="lastName"
                 value={formData.lastName}
                 onChange={handleChange}
+                maxLength={50}
                 className="border-[#e7e5e4] focus-visible:ring-[#c26941]"
               />
             </div>
@@ -238,6 +247,7 @@ export default function SettingsPage() {
               value={formData.location}
               onChange={handleChange}
               placeholder="e.g. Main Warehouse"
+              maxLength={100}
               className="border-[#e7e5e4] focus-visible:ring-[#c26941]"
             />
             <p className="text-xs text-[#78716c]">This will be displayed as your role/location in the header.</p>
