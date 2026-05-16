@@ -424,8 +424,8 @@ export function InventoryTable() {
               {paginatedItems.length > 0 ? (
                 paginatedItems.map((item) => (
                   <tr key={item.id} className="hover:bg-[#fafafa]/50 transition-colors">
-                    <td className="px-6 py-4 font-medium text-[#2d2621]">{item.name}</td>
-                    {visibleColumns.description && <td className="px-6 py-4 text-[#78716c]">{item.sku}</td>}
+                    <td className="px-6 py-4 font-medium text-[#2d2621] max-w-[160px]"><span className="block truncate" title={item.name}>{item.name}</span></td>
+                    {visibleColumns.description && <td className="px-6 py-4 text-[#78716c] max-w-[120px]"><span className="block truncate" title={item.sku}>{item.sku}</span></td>}
                     {visibleColumns.category && (
                       <td className="px-6 py-4">
                         <span className="text-xs text-[#78716c] bg-[#f5f5f4] px-2 py-1 rounded">{item.category}</span>
@@ -459,7 +459,7 @@ export function InventoryTable() {
                       </td>
                     )}
                     {visibleColumns.minStock && <td className="px-6 py-4 text-[#78716c]">{item.min}</td>}
-                    {visibleColumns.unit && <td className="px-6 py-4 text-[#78716c]">{item.unit}</td>}
+                    {visibleColumns.unit && <td className="px-6 py-4 text-[#78716c] max-w-[80px]"><span className="block truncate" title={item.unit}>{item.unit}</span></td>}
                     {visibleColumns.status && (
                       <td className="px-6 py-4">
                         <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border ${
@@ -475,7 +475,7 @@ export function InventoryTable() {
                         </span>
                       </td>
                     )}
-                    {visibleColumns.location && <td className="px-6 py-4 text-[#78716c] text-xs">{item.location}</td>}
+                    {visibleColumns.location && <td className="px-6 py-4 text-[#78716c] text-xs max-w-[120px]"><span className="block truncate" title={item.location}>{item.location}</span></td>}
                     <td className="px-6 py-4 text-right">
                       <div className="flex items-center justify-end gap-2 text-gray-400">
                         {canEdit && (

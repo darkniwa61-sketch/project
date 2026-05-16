@@ -80,17 +80,17 @@ export function AddItemModal({ isOpen, onClose, onAdd }: AddItemModalProps) {
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           <div className="space-y-2">
             <Label htmlFor="name">Product Name</Label>
-            <Input id="name" name="name" required maxLength={100} value={formData.name} onChange={handleChange} placeholder="e.g. Hammer Drill" />
+            <Input id="name" name="name" required maxLength={60} value={formData.name} onChange={handleChange} placeholder="e.g. Hammer Drill" />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="sku">Description</Label>
-              <Input id="sku" name="sku" required maxLength={100} value={formData.sku} onChange={handleChange} placeholder="e.g., Heavy Duty..." />
+              <Input id="sku" name="sku" required maxLength={80} value={formData.sku} onChange={handleChange} placeholder="e.g., Heavy Duty..." />
             </div>
             <div className="space-y-2">
               <Label htmlFor="category">Category</Label>
-              <Input id="category" name="category" required maxLength={50} value={formData.category} onChange={handleChange} placeholder="Tools" />
+              <Input id="category" name="category" required maxLength={30} value={formData.category} onChange={handleChange} placeholder="Tools" />
             </div>
           </div>
 
@@ -108,11 +108,11 @@ export function AddItemModal({ isOpen, onClose, onAdd }: AddItemModalProps) {
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="unit">Unit</Label>
-              <Input id="unit" name="unit" required maxLength={20} value={formData.unit} onChange={handleChange} placeholder="pc, box, kg..." />
+              <Input id="unit" name="unit" required maxLength={15} value={formData.unit} onChange={handleChange} placeholder="pc, box, kg..." />
             </div>
             <div className="space-y-2">
               <Label htmlFor="location">Location</Label>
-              <Input id="location" name="location" required maxLength={100} value={formData.location} onChange={handleChange} placeholder="Warehouse A - Rack 2" />
+              <Input id="location" name="location" required maxLength={60} value={formData.location} onChange={handleChange} placeholder="Warehouse A - Rack 2" />
             </div>
           </div>
 
