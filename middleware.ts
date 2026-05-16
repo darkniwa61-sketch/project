@@ -67,6 +67,8 @@ export async function middleware(req: NextRequest) {
     req.nextUrl.pathname === '/reset-password'
 
   const isApiRoute = req.nextUrl.pathname.startsWith('/api/')
+  const isOnboarding = req.nextUrl.pathname === '/onboarding'
+  const isDashboard = req.nextUrl.pathname.startsWith('/dashboard')
 
   // Not logged in → Auth handling
   if (!session) {
@@ -82,6 +84,40 @@ export async function middleware(req: NextRequest) {
     const loginRes = NextResponse.redirect(new URL('/login', req.url))
     res.headers.forEach((value, key) => loginRes.headers.set(key, value))
     return loginRes
+  }
+
+  // ── ONBOARDING GATE ─────────────────────────────────────
+  // If user is logged in and trying to access /dashboard, check if they have an org.
+  // If not, redirect them to /onboarding first.
+  if (isDashboard) {
+    const { data: orgMembership } = await supabase
+      .from('user_organizations')
+      .select('organization_id')
+      .eq('user_id', session.user.id)
+      .limit(1)
+      .single()
+
+    if (!orgMembership) {
+      const onboardingRes = NextResponse.redirect(new URL('/onboarding', req.url))
+      res.headers.forEach((value, key) => onboardingRes.headers.set(key, value))
+      return onboardingRes
+    }
+  }
+
+  // If user already has an org and tries to visit /onboarding, send them to dashboard
+  if (isOnboarding) {
+    const { data: orgMembership } = await supabase
+      .from('user_organizations')
+      .select('organization_id')
+      .eq('user_id', session.user.id)
+      .limit(1)
+      .single()
+
+    if (orgMembership) {
+      const dashboardRes = NextResponse.redirect(new URL('/dashboard', req.url))
+      res.headers.forEach((value, key) => dashboardRes.headers.set(key, value))
+      return dashboardRes
+    }
   }
 
   return res
