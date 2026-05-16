@@ -32,7 +32,7 @@ export default function InviteManager() {
 
   async function loadPendingInvites() {
     const { data } = await supabase.rpc('get_org_invites')
-    if (data) setPendingInvites(data)
+    if (data) setPendingInvites(data.map((d: any) => ({ ...d, code: d.code || d.token })))
   }
 
   async function handleGenerateCode() {

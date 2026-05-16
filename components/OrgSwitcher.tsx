@@ -211,7 +211,6 @@ export default function OrgSwitcher({ externalOpen, onOpenChange }: OrgSwitcherP
                   textAlign:      'left',
                   opacity:        switchingId === org.organization_id ? 0.6 : 1,
                   transition:     'background 0.1s',
-                  cursor:         'pointer',
                   userSelect:     'none',
                 }}
                 onMouseEnter={e => {

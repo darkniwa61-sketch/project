@@ -12,7 +12,7 @@ export async function middleware(req: NextRequest) {
   // or a placeholder if we want to be more specific.
   // To be most efficient, we can check session FIRST, then rate limit.
   
-  const ip = req.ip ?? req.headers.get('x-real-ip') ?? req.headers.get('x-forwarded-for') ?? '127.0.0.1'
+  const ip = req.headers.get('x-real-ip') ?? req.headers.get('x-forwarded-for') ?? '127.0.0.1'
   
   // Create a base response so we can modify it
   let res = NextResponse.next()
