@@ -21,7 +21,7 @@ export default function LoginForm({ errorMsg, successMsg }: { errorMsg: string |
                         Welcome back
                     </h1>
                     <p className="text-sm text-slate-400">
-                        Authenticate to access your R&J Management dashboard
+                        Authenticate to access your ST. Joseph Amity Prime Development Corp. dashboard
                     </p>
                 </div>
 

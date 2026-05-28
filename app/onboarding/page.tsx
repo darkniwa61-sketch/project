@@ -65,7 +65,7 @@ export default function OnboardingPage() {
         {mode === 'choose' && (
           <div className="bg-[#111827] rounded-3xl shadow-2xl border border-white/5 overflow-hidden">
             <div className="px-8 pt-10 pb-8 border-b border-white/5 bg-gradient-to-b from-white/[0.02] to-transparent">
-              <h1 className="text-3xl font-bold text-white tracking-tight">Welcome to R&J</h1>
+              <h1 className="text-3xl font-bold text-white tracking-tight">Welcome to ST. Joseph Amity</h1>
               <p className="text-sm text-white/50 mt-2">How would you like to set up your management workspace?</p>
             </div>
 
@@ -94,7 +94,7 @@ export default function OnboardingPage() {
                 </div>
                 <div>
                   <span className="block font-bold text-white text-lg group-hover:text-[#06b6d4] transition-colors">Business Setup</span>
-                  <span className="text-xs text-white/40 mt-1 block">Start a new R&J workspace</span>
+                  <span className="text-xs text-white/40 mt-1 block">Start a new ST. Joseph Amity workspace</span>
                 </div>
               </button>
             </div>
@@ -164,7 +164,7 @@ export default function OnboardingPage() {
 
             <h1 className="text-3xl font-bold text-white mb-2 tracking-tight">Business Setup</h1>
             <p className="text-sm text-white/50 mb-8">
-              Initialize a new R&J Management workspace for your business.
+              Initialize a new ST. Joseph Amity workspace for your business.
             </p>
 
             <form onSubmit={handleCreateWorkspace} className="space-y-6">

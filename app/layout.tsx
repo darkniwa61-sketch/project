@@ -15,13 +15,13 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "R&J Management",
-  description: "R&J Management - Professional Inventory Management System",
+  title: "ST. Joseph Amity Prime Development Corp.",
+  description: "ST. Joseph Amity Prime Development Corp. - Professional Inventory Management System",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "R&J Management",
+    title: "ST. Joseph Amity Prime Development Corp.",
   },
   icons: {
     icon: "/icon-192x192.png",

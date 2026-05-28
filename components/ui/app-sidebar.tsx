@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { 
@@ -64,13 +65,13 @@ export function AppSidebar() {
         ${isOpen ? 'translate-x-0' : '-translate-x-full'}
       `}>
       {/* Sidebar Header / Logo */}
-      <div className="flex items-center gap-3 p-6 shrink-0 border-b border-white/5">
-        <div className="bg-[#06b6d4] p-1.5 rounded-lg flex items-center justify-center shadow-[0_0_15px_rgba(6,182,212,0.3)]">
-          <Zap className="w-5 h-5 text-black" fill="currentColor" />
+      <div className="flex flex-col gap-3 p-6 shrink-0 border-b border-white/5">
+        <div className="bg-white p-2 rounded-xl flex items-center justify-center shadow-[0_0_15px_rgba(255,255,255,0.1)]">
+          <Image src="/logo.png" alt="ST. Joseph Amity Prime Development Corp." width={160} height={60} className="object-contain" />
         </div>
         <div>
-          <h1 className="text-[10px] font-bold tracking-widest text-[#06b6d4] leading-tight uppercase">Management</h1>
-          <h2 className="text-sm font-bold leading-tight text-white tracking-tight">R&J</h2>
+          <h1 className="text-[10px] font-bold tracking-widest text-[#06b6d4] leading-tight uppercase">ST. Joseph Amity</h1>
+          <h2 className="text-xs font-bold leading-tight text-white tracking-tight">Prime Dev Corp.</h2>
           <h3 className="text-[9px] text-white/40 font-medium mt-1 uppercase tracking-tighter">Role: {profile ? profile.role : (isLoading ? 'loading...' : 'none')}</h3>
         </div>
       </div>
